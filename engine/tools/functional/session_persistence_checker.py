@@ -37,16 +37,20 @@ class SessionPersistenceCheckerTool(BaseTool):
         "required": [],
     }
 
-    def __init__(self, computer_tool: "PlaywrightComputerTool", fallback_url: str | None = None):
+    def __init__(self, computer_tool: PlaywrightComputerTool, fallback_url: str | None = None):
         self._computer = computer_tool
         self._fallback_url = fallback_url
 
     async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
         await self._computer.ensure_ready()
 
-        target_url = str(arguments.get("url") or self._computer.current_url or self._fallback_url or "").strip()
+        target_url = str(
+            arguments.get("url") or self._computer.current_url or self._fallback_url or ""
+        ).strip()
         if not target_url:
-            return ToolExecutionResult(success=False, error="No URL available for session persistence check")
+            return ToolExecutionResult(
+                success=False, error="No URL available for session persistence check"
+            )
         if not target_url.startswith(("http://", "https://")):
             target_url = f"https://{target_url}"
 
@@ -58,11 +62,15 @@ class SessionPersistenceCheckerTool(BaseTool):
             await self._computer.reload()
             after = await self._computer.get_cookies()
         except Exception as exc:
-            return ToolExecutionResult(success=False, error=f"Failed to check session persistence: {exc}")
+            return ToolExecutionResult(
+                success=False, error=f"Failed to check session persistence: {exc}"
+            )
 
         before_map = {str(item.get("name", "")): item for item in before}
         after_map = {str(item.get("name", "")): item for item in after}
-        session_names = sorted(name for name in before_map.keys() if _looks_like_session_cookie(name))
+        session_names = sorted(
+            name for name in before_map.keys() if _looks_like_session_cookie(name)
+        )
         persisted = [name for name in session_names if name in after_map]
         dropped = [name for name in session_names if name not in after_map]
 

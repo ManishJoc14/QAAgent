@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from engine.tools.functional_tools import SessionPersistenceCheckerTool
+from engine.tools.functional import SessionPersistenceCheckerTool
 
 
 class _FakeComputer:
@@ -34,7 +34,9 @@ class _FakeComputer:
 
 @pytest.mark.asyncio
 async def test_session_persistence_checker_detects_dropped_session_cookie():
-    tool = SessionPersistenceCheckerTool(computer_tool=_FakeComputer(), fallback_url="https://example.com")
+    tool = SessionPersistenceCheckerTool(
+        computer_tool=_FakeComputer(), fallback_url="https://example.com"
+    )
     result = await tool.execute({})
 
     assert result.success is True

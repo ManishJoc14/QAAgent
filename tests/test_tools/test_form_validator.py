@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from engine.tools.functional_tools import FormValidatorTool
+from engine.tools.functional import FormValidatorTool
 
 
 class _FakeResponse:

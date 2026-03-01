@@ -36,14 +36,16 @@ class LoginFlowCheckerTool(BaseTool):
         "required": [],
     }
 
-    def __init__(self, computer_tool: "PlaywrightComputerTool", fallback_url: str | None = None):
+    def __init__(self, computer_tool: PlaywrightComputerTool, fallback_url: str | None = None):
         self._computer = computer_tool
         self._fallback_url = fallback_url
 
     async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
         await self._computer.ensure_ready()
 
-        target_url = str(arguments.get("url") or self._computer.current_url or self._fallback_url or "").strip()
+        target_url = str(
+            arguments.get("url") or self._computer.current_url or self._fallback_url or ""
+        ).strip()
         if not target_url:
             return ToolExecutionResult(success=False, error="No URL available for login flow check")
         if not target_url.startswith(("http://", "https://")):
@@ -52,7 +54,9 @@ class LoginFlowCheckerTool(BaseTool):
         username = str(arguments.get("username") or "").strip()
         password = str(arguments.get("password") or "").strip()
         verification = {
-            "auth_api_endpoint_contains": str(arguments.get("auth_api_endpoint_contains") or "").strip(),
+            "auth_api_endpoint_contains": str(
+                arguments.get("auth_api_endpoint_contains") or ""
+            ).strip(),
             "success_selector": str(arguments.get("success_selector") or "").strip(),
             "auth_state_js": str(arguments.get("auth_state_js") or "").strip(),
             "token_storage_key": str(arguments.get("token_storage_key") or "").strip(),
@@ -64,7 +68,9 @@ class LoginFlowCheckerTool(BaseTool):
                 await self._computer.navigate(target_url)
             surface = await self._computer.inspect_login_surface()
         except Exception as exc:
-            return ToolExecutionResult(success=False, error=f"Failed to inspect login surface: {exc}")
+            return ToolExecutionResult(
+                success=False, error=f"Failed to inspect login surface: {exc}"
+            )
 
         finding_details: list[dict[str, Any]] = []
         payload: dict[str, Any] = {
@@ -109,7 +115,10 @@ class LoginFlowCheckerTool(BaseTool):
                     "severity": "info",
                     "location": target_url,
                     "message": "No credentials provided; skipped login attempt.",
-                    "evidence": {"username_provided": bool(username), "password_provided": bool(password)},
+                    "evidence": {
+                        "username_provided": bool(username),
+                        "password_provided": bool(password),
+                    },
                 }
             )
             payload["findings"] = [_format_finding_line(item) for item in finding_details]
@@ -132,14 +141,21 @@ class LoginFlowCheckerTool(BaseTool):
                 )
             except TypeError:
                 # Backward compatibility for test doubles or older browser tool implementations.
-                login_result = await self._computer.attempt_login(username=username, password=password)
+                login_result = await self._computer.attempt_login(
+                    username=username, password=password
+                )
         except Exception as exc:
-            return ToolExecutionResult(success=False, error=f"Failed to execute login attempt: {exc}")
+            return ToolExecutionResult(
+                success=False, error=f"Failed to execute login attempt: {exc}"
+            )
 
         payload["attempted_login"] = True
         payload["login_result"] = login_result
 
-        mode = str(login_result.get("verification_mode") or ("deterministic" if verification else "heuristic"))
+        mode = str(
+            login_result.get("verification_mode")
+            or ("deterministic" if verification else "heuristic")
+        )
         if mode == "deterministic":
             if login_result.get("likely_success"):
                 finding_details.append(

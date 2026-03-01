@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from engine.tools.functional_tools import ButtonClickCheckerTool
+from engine.tools.functional import ButtonClickCheckerTool
 
 
 class _FakeResponse:

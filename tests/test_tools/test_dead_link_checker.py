@@ -3,7 +3,7 @@ import urllib.error
 
 import pytest
 
-from engine.tools.functional_tools import DeadLinkCheckerTool
+from engine.tools.functional import DeadLinkCheckerTool
 
 
 class _FakeResponse:

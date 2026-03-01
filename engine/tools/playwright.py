@@ -4,7 +4,13 @@ import asyncio
 import base64
 from typing import Any, Literal, get_args
 
-from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
+from playwright.async_api import (
+    Browser,
+    BrowserContext,
+    Page,
+    Playwright,
+    async_playwright,
+)
 
 from .base import BaseTool, ToolExecutionResult
 
@@ -408,7 +414,9 @@ class PlaywrightComputerTool(BaseTool):
 
         verification = verification or {}
         configured_checks = {
-            "auth_api_endpoint_contains": bool(str(verification.get("auth_api_endpoint_contains") or "").strip()),
+            "auth_api_endpoint_contains": bool(
+                str(verification.get("auth_api_endpoint_contains") or "").strip()
+            ),
             "success_selector": bool(str(verification.get("success_selector") or "").strip()),
             "auth_state_js": bool(str(verification.get("auth_state_js") or "").strip()),
             "token_storage_key": bool(str(verification.get("token_storage_key") or "").strip()),
@@ -417,7 +425,9 @@ class PlaywrightComputerTool(BaseTool):
         deterministic_signals: dict[str, Any] = {}
         if configured_checks["auth_api_endpoint_contains"]:
             endpoint = str(verification.get("auth_api_endpoint_contains")).strip().lower()
-            matching = [item for item in login_responses if endpoint in str(item.get("url", "")).lower()]
+            matching = [
+                item for item in login_responses if endpoint in str(item.get("url", "")).lower()
+            ]
             auth_api_success = any(
                 isinstance(item.get("status"), int) and 200 <= int(item["status"]) < 300
                 for item in matching
@@ -475,9 +485,8 @@ class PlaywrightComputerTool(BaseTool):
             deterministic_signals.get("token_storage_key_present"),
         ]
         has_configured_deterministic_checks = any(configured_checks.values())
-        deterministic_pass = (
-            has_configured_deterministic_checks
-            and all(value is True for value in configured_signal_values if value is not None)
+        deterministic_pass = has_configured_deterministic_checks and all(
+            value is True for value in configured_signal_values if value is not None
         )
 
         heuristic_signals = {
@@ -492,7 +501,9 @@ class PlaywrightComputerTool(BaseTool):
         )
 
         verification_mode = "deterministic" if has_configured_deterministic_checks else "heuristic"
-        likely_success = deterministic_pass if has_configured_deterministic_checks else heuristic_pass
+        likely_success = (
+            deterministic_pass if has_configured_deterministic_checks else heuristic_pass
+        )
         return {
             "before_url": before_url,
             "after_url": after_url,
@@ -627,7 +638,8 @@ class PlaywrightComputerTool(BaseTool):
         self._page = await self._context.new_page()
 
         self._page.on(
-            "console", lambda msg: self._console_events.append(f"[{msg.type}] {msg.text}")
+            "console",
+            lambda msg: self._console_events.append(f"[{msg.type}] {msg.text}"),
         )
         self._page.on("pageerror", lambda exc: self._console_events.append(f"[pageerror] {exc}"))
         self._page.on(
@@ -770,7 +782,13 @@ class PlaywrightComputerTool(BaseTool):
         if action == "cursor_position":
             return ToolExecutionResult(output=f"X={self._cursor_x},Y={self._cursor_y}")
 
-        if action in ("left_click", "right_click", "middle_click", "double_click", "triple_click"):
+        if action in (
+            "left_click",
+            "right_click",
+            "middle_click",
+            "double_click",
+            "triple_click",
+        ):
             x, y = self._validate_coordinate(coordinate, required=False)
             if coordinate is not None:
                 await self._page.mouse.move(x, y)
@@ -901,3 +919,22 @@ class PlaywrightComputerTool(BaseTool):
         self._console_events = []
         self._request_failures = []
         self._response_events = []
+
+    async def get_page_content(self) -> str:
+        """Fetch full page HTML for SEO / parsing purposes."""
+        await self._ensure_browser()
+        assert self._page is not None
+        return await self._page.content()
+
+    async def goto(self, url: str | None = None):
+        url = url or self._target_url
+        if not url.startswith(("http://", "https://")):
+            url = f"https://{url}"
+        await self._ensure_browser()
+        await self._safe_goto(url)
+        self._target_url = url
+
+    async def evaluate_js(self, js_expr: str, *args):
+        await self._ensure_browser()
+        assert self._page is not None
+        return await self._page.evaluate(js_expr, *args)

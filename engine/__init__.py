@@ -6,17 +6,14 @@ from engine.core.types import QAResult, QATask
 from engine.prompts import build_system_prompt, build_user_prompt
 from engine.providers import ProviderFactory
 from engine.tools import (
-    ButtonClickCheckerTool,
-    DeadLinkCheckerTool,
-    FormValidatorTool,
-    LoginFlowCheckerTool,
-    NetworkTabAnalyzerTool,
     PlaywrightComputerTool,
-    SessionPersistenceCheckerTool,
     ToolCollection,
 )
 
 try:
+    from engine.tools.console import ConsoleWatcherTool, NetworkMonitorTool
+    from engine.tools.metadata import SEOMetadataCheckerTool
+    from engine.tools.performance import PerformanceAuditTool
     from engine.tools.security import (
         SecurityContentAuditTool,
         SecurityHeadersAuditTool,
@@ -24,8 +21,12 @@ try:
     )
 except ModuleNotFoundError:
     SecurityContentAuditTool = None  # type: ignore[assignment]
-    SecurityHeadersAuditTool = None  # type: ignore[assignment]
-    SSLAuditTool = None  # type: ignore[assignment]
+    SecurityHeadersAuditTool = None
+    SSLAuditTool = None
+    NetworkMonitorTool = None
+    ConsoleWatcherTool = None
+    PerformanceAuditTool = None
+    SEOMetadataCheckerTool = None
 
 
 class Engine:
@@ -61,9 +62,17 @@ class Engine:
 
     def _build_default_tools(self, target_url: str) -> ToolCollection:
         if PlaywrightComputerTool is None:
-            raise RuntimeError("Playwright is not installed. Install it to use browser-backed tools.")
-        if SSLAuditTool is None or SecurityHeadersAuditTool is None or SecurityContentAuditTool is None:
-            raise RuntimeError("Security toolchain is unavailable because dependencies failed to load.")
+            raise RuntimeError(
+                "Playwright is not installed. Install it to use browser-backed tools."
+            )
+        if (
+            SSLAuditTool is None
+            or SecurityHeadersAuditTool is None
+            or SecurityContentAuditTool is None
+        ):
+            raise RuntimeError(
+                "Security toolchain is unavailable because dependencies failed to load."
+            )
 
         computer_tool = PlaywrightComputerTool(
             target_url=target_url,
@@ -74,15 +83,14 @@ class Engine:
 
         return ToolCollection(
             [
-                DeadLinkCheckerTool(fallback_url=target_url),
-                FormValidatorTool(fallback_url=target_url),
-                ButtonClickCheckerTool(fallback_url=target_url),
-                LoginFlowCheckerTool(computer_tool=computer_tool, fallback_url=target_url),
-                SessionPersistenceCheckerTool(computer_tool=computer_tool, fallback_url=target_url),
-                NetworkTabAnalyzerTool(computer_tool=computer_tool),
+                NetworkMonitorTool(computer_tool=computer_tool),
+                ConsoleWatcherTool(computer_tool=computer_tool),
+                SEOMetadataCheckerTool(computer_tool=computer_tool),
+                NetworkMonitorTool(fallback_url=target_url),
                 SSLAuditTool(fallback_url=target_url),
                 SecurityHeadersAuditTool(fallback_url=target_url),
                 SecurityContentAuditTool(computer_tool=computer_tool),
+                PerformanceAuditTool(computer_tool=computer_tool),
             ]
         )
 

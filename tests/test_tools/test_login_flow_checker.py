@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from engine.tools.functional_tools import LoginFlowCheckerTool
+from engine.tools.functional import LoginFlowCheckerTool
 
 
 class _FakeComputer:
@@ -35,7 +35,9 @@ class _FakeComputer:
             "error_text_detected": False,
             "verification_mode": "deterministic" if verification else "heuristic",
             "configured_checks": {
-                "auth_api_endpoint_contains": bool(verification and verification.get("auth_api_endpoint_contains")),
+                "auth_api_endpoint_contains": bool(
+                    verification and verification.get("auth_api_endpoint_contains")
+                ),
                 "success_selector": bool(verification and verification.get("success_selector")),
                 "auth_state_js": bool(verification and verification.get("auth_state_js")),
                 "token_storage_key": bool(verification and verification.get("token_storage_key")),
@@ -47,7 +49,9 @@ class _FakeComputer:
 
 @pytest.mark.asyncio
 async def test_login_flow_checker_attempts_login_with_credentials():
-    tool = LoginFlowCheckerTool(computer_tool=_FakeComputer(), fallback_url="https://example.com/login")
+    tool = LoginFlowCheckerTool(
+        computer_tool=_FakeComputer(), fallback_url="https://example.com/login"
+    )
     result = await tool.execute({"username": "user@example.com", "password": "secret"})
 
     assert result.success is True
@@ -62,7 +66,9 @@ async def test_login_flow_checker_attempts_login_with_credentials():
 
 @pytest.mark.asyncio
 async def test_login_flow_checker_uses_deterministic_verification_when_requested():
-    tool = LoginFlowCheckerTool(computer_tool=_FakeComputer(), fallback_url="https://example.com/login")
+    tool = LoginFlowCheckerTool(
+        computer_tool=_FakeComputer(), fallback_url="https://example.com/login"
+    )
     result = await tool.execute(
         {
             "username": "user@example.com",
