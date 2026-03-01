@@ -1,21 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-
 # Project Imports
 from engine.core.agent_loop import QAOrchestrator
 from engine.core.types import QAResult, QATask
 from engine.prompts import build_system_prompt, build_user_prompt
 from engine.providers import ProviderFactory
 from engine.tools import (
-    BaseTool,
-    BashTool,
-    ConsoleNetworkAuditTool,
-    PageAuditTool,
-    PerformanceAuditTool,
     PlaywrightComputerTool,
-    SecurityHeadersAuditTool,
     ToolCollection,
+)
+from engine.tools.security import (
+    SecurityContentAuditTool,
+    SecurityHeadersAuditTool,
+    SSLAuditTool,
 )
 
 
@@ -28,7 +25,6 @@ class Engine:
         provider_name: str = "mistral",
         model: str = "mistral-large-latest",
         provider_kwargs: dict | None = None,
-        tools: Iterable[BaseTool] | None = None,
         max_iterations: int = 20,
         temperature: float = 0.2,
         max_tokens: int = 10000,
@@ -51,26 +47,7 @@ class Engine:
         self.device_profile = device_profile
         self.network_profile = network_profile
 
-        self._tools = list(tools) if tools is not None else []
-
     def _build_default_tools(self, target_url: str) -> ToolCollection:
-        if self._tools:
-            return ToolCollection(self._tools)
-
-        if PlaywrightComputerTool is None:
-            raise RuntimeError(
-                "Playwright is not installed. Install it to use the default 'computer' tool."
-            )
-        if (
-            PageAuditTool is None
-            or ConsoleNetworkAuditTool is None
-            or PerformanceAuditTool is None
-            or SecurityHeadersAuditTool is None
-        ):
-            raise RuntimeError(
-                "Audit tools unavailable because Playwright-dependent modules failed to load."
-            )
-
         computer_tool = PlaywrightComputerTool(
             target_url=target_url,
             locale=self.locale,
@@ -80,12 +57,9 @@ class Engine:
 
         return ToolCollection(
             [
-                computer_tool,
-                BashTool(),
-                PageAuditTool(computer_tool=computer_tool),
-                ConsoleNetworkAuditTool(computer_tool=computer_tool),
-                PerformanceAuditTool(computer_tool=computer_tool),
+                SSLAuditTool(fallback_url=target_url),
                 SecurityHeadersAuditTool(fallback_url=target_url),
+                SecurityContentAuditTool(computer_tool=computer_tool),
             ]
         )
 

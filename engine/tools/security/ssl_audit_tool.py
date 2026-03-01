@@ -5,7 +5,7 @@ import socket
 import ssl
 import urllib.request
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 from ..base import BaseTool, ToolExecutionResult
@@ -26,8 +26,11 @@ class SSLAuditTool(BaseTool):
         "required": ["url"],
     }
 
+    def __init__(self, fallback_url: Optional[str] = None):
+        self.fallback_url = fallback_url
+
     async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
-        url = arguments.get("url")
+        url = arguments.get("url") or self.fallback_url
 
         if not url:
             return ToolExecutionResult(success=False, error="No URL provided")

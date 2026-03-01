@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import ssl
 import urllib.request
-from typing import Any
+from typing import Any, Optional
 
 from ..base import BaseTool, ToolExecutionResult
 
@@ -29,8 +29,11 @@ class SecurityHeadersAuditTool(BaseTool):
         "permissions-policy",
     ]
 
+    def __init__(self, fallback_url: Optional[str] = None):
+        self.fallback_url = fallback_url
+
     async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
-        url = arguments.get("url")
+        url = arguments.get("url") or self.fallback_url
 
         if not url:
             return ToolExecutionResult(success=False, error="No URL provided")
