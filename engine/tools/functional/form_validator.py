@@ -5,7 +5,6 @@ import ssl
 import urllib.request
 from html.parser import HTMLParser
 from typing import Any
-from urllib.parse import urljoin
 
 from engine.tools.base import BaseTool, ToolExecutionResult
 
@@ -74,9 +73,7 @@ class _FormParser(HTMLParser):
                         "id": attr.get("id", "").strip(),
                         "required": "required" in attr,
                         "has_aria_label": bool(attr.get("aria-label", "").strip()),
-                        "has_aria_labelledby": bool(
-                            attr.get("aria-labelledby", "").strip()
-                        ),
+                        "has_aria_labelledby": bool(attr.get("aria-labelledby", "").strip()),
                     }
                 )
             if tag_name == "input" and input_type == "submit":
@@ -97,7 +94,7 @@ class _FormParser(HTMLParser):
 class FormValidatorTool(BaseTool):
     """
     Validate basic form structure and required-field metadata.
-    
+
     It wants to answer these questions:
     Does the page have forms?
     Do forms have submit buttons?
@@ -140,9 +137,7 @@ class FormValidatorTool(BaseTool):
         try:
             html = self._download_html(url)
         except Exception as exc:
-            return ToolExecutionResult(
-                success=False, error=f"Failed to fetch page HTML: {exc}"
-            )
+            return ToolExecutionResult(success=False, error=f"Failed to fetch page HTML: {exc}")
 
         parser = _FormParser()
         parser.feed(html)
@@ -176,9 +171,7 @@ class FormValidatorTool(BaseTool):
                     unlabeled_controls += 1
                     control_location = f"{url}#{self._form_locator(form)}"
                     control_hint = (
-                        control["id"]
-                        or control["name"]
-                        or f"{control['tag']}[{control['type']}]"
+                        control["id"] or control["name"] or f"{control['tag']}[{control['type']}]"
                     )
                     unlabeled_controls_in_form.append(
                         {

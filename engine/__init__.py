@@ -9,6 +9,7 @@ from engine.tools import (
     PlaywrightComputerTool,
     ToolCollection,
 )
+from engine.tools.maps import AVAILABLE_QA_TOOLS
 
 try:
     from engine.tools.console import ConsoleWatcherTool, NetworkMonitorTool
@@ -18,9 +19,6 @@ except ModuleNotFoundError:
 
 try:
     from engine.tools.functional import (
-        ButtonClickCheckerTool,
-        DeadLinkCheckerTool,
-        FormValidatorTool,
         LoginFlowCheckerTool,
         SessionPersistenceCheckerTool,
     )
@@ -30,17 +28,6 @@ except ModuleNotFoundError:
     ButtonClickCheckerTool = None
     LoginFlowCheckerTool = None
     SessionPersistenceCheckerTool = None
-
-try:
-    from engine.tools.uiux import (
-        AccessibilityAuditTool,
-        ResponsiveLayoutCheckerTool,
-        TouchTargetCheckerTool,
-    )
-except ModuleNotFoundError:
-    AccessibilityAuditTool = None
-    ResponsiveLayoutCheckerTool = None
-    TouchTargetCheckerTool = None
 
 try:
     from engine.tools.metadata import SEOMetadataCheckerTool
@@ -53,15 +40,9 @@ except ModuleNotFoundError:
     PerformanceAuditTool = None
 
 try:
-    from engine.tools.security import (
-        SecurityContentAuditTool,
-        SecurityHeadersAuditTool,
-        SSLAuditTool,
-    )
+    from engine.tools.security import SecurityContentAuditTool
 except ModuleNotFoundError:
     SecurityContentAuditTool = None  # type: ignore[assignment]
-    SecurityHeadersAuditTool = None
-    SSLAuditTool = None
 
 
 class Engine:
@@ -79,6 +60,7 @@ class Engine:
         locale: str = "en-US",
         device_profile: str = "iphone_14",
         network_profile: str = "wifi",
+        selected_tools: list[str] = None,
     ):
         provider_kwargs = provider_kwargs or {}
 
@@ -94,8 +76,43 @@ class Engine:
         self.locale = locale
         self.device_profile = device_profile
         self.network_profile = network_profile
+        self.selected_tools = selected_tools
 
-    def _build_default_tools(self, target_url: str) -> ToolCollection:
+    async def _init_tools(
+        computer_tool: PlaywrightComputerTool,
+        target_url: str,
+        selected_tools: list[str],
+    ):
+        tools = []
+
+        for key in selected_tools:
+            tool_cls = AVAILABLE_QA_TOOLS.get(key)
+            if not tool_cls:
+                continue
+
+            # Determine if the tool needs computer_tool or fallback_url
+            if issubclass(
+                tool_cls,
+                (
+                    NetworkMonitorTool,
+                    ConsoleWatcherTool,
+                    SEOMetadataCheckerTool,
+                    PerformanceAuditTool,
+                    LoginFlowCheckerTool,
+                    SessionPersistenceCheckerTool,
+                    SecurityContentAuditTool,
+                ),
+            ):
+                tools.append(tool_cls(computer_tool=computer_tool))
+            else:
+                tools.append(tool_cls(fallback_url=target_url))
+
+        if not tools:
+            raise RuntimeError("No tools initialized. Check your selection and tool availability.")
+
+        return tools
+
+    async def _build_default_tools(self, target_url: str) -> ToolCollection:
         if PlaywrightComputerTool is None:
             raise RuntimeError(
                 "Playwright is not installed. Install it to use browser-backed tools."
@@ -108,53 +125,12 @@ class Engine:
             network_profile=self.network_profile,
         )
 
-        tools = []
-        if DeadLinkCheckerTool is not None:
-            tools.append(DeadLinkCheckerTool(fallback_url=target_url))
-        if FormValidatorTool is not None:
-            tools.append(FormValidatorTool(fallback_url=target_url))
-        if ButtonClickCheckerTool is not None:
-            tools.append(ButtonClickCheckerTool(fallback_url=target_url))
-        if LoginFlowCheckerTool is not None:
-            tools.append(
-                LoginFlowCheckerTool(
-                    computer_tool=computer_tool, fallback_url=target_url
-                )
-            )
-        if SessionPersistenceCheckerTool is not None:
-            tools.append(
-                SessionPersistenceCheckerTool(
-                    computer_tool=computer_tool, fallback_url=target_url
-                )
-            )
+        tools = self._init_tools(
+            computer_tool,
+            target_url,
+            selected_tools=self.selected_tools,
+        )
 
-        if AccessibilityAuditTool is not None:
-            tools.append(AccessibilityAuditTool(fallback_url=target_url))
-        if ResponsiveLayoutCheckerTool is not None:
-            tools.append(ResponsiveLayoutCheckerTool(fallback_url=target_url))
-        if TouchTargetCheckerTool is not None:
-            tools.append(TouchTargetCheckerTool(fallback_url=target_url))
-
-        if NetworkMonitorTool is not None:
-            tools.append(NetworkMonitorTool(computer_tool=computer_tool))
-        if ConsoleWatcherTool is not None:
-            tools.append(ConsoleWatcherTool(computer_tool=computer_tool))
-        if SEOMetadataCheckerTool is not None:
-            tools.append(SEOMetadataCheckerTool(computer_tool=computer_tool))
-        if PerformanceAuditTool is not None:
-            tools.append(PerformanceAuditTool(computer_tool=computer_tool))
-
-        if SSLAuditTool is not None:
-            tools.append(SSLAuditTool(fallback_url=target_url))
-        if SecurityHeadersAuditTool is not None:
-            tools.append(SecurityHeadersAuditTool(fallback_url=target_url))
-        if SecurityContentAuditTool is not None:
-            tools.append(SecurityContentAuditTool(computer_tool=computer_tool))
-
-        if not tools:
-            raise RuntimeError(
-                "No tools available. Check optional dependencies and tool modules."
-            )
         return ToolCollection(tools)
 
     async def run_task(self, task: QATask) -> QAResult:
@@ -185,9 +161,7 @@ class Engine:
         )
 
         try:
-            return await orchestrator.execute(
-                system_prompt=system_prompt, user_prompt=user_prompt
-            )
+            return await orchestrator.execute(system_prompt=system_prompt, user_prompt=user_prompt)
         finally:
             await tools.close()
 

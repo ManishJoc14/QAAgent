@@ -22,6 +22,7 @@ def run_qa_task_sync(task: QATask, request: QARequest):
             locale="en-US",
             device_profile=request.device_profile,
             network_profile=request.network_profile,
+            selected_tools=request.selected_tools,
         )
         return await qa_engine.run_task(task)
 
