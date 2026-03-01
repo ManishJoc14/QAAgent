@@ -1,9 +1,9 @@
 from .base import BaseLLMProvider, LLMMessage, LLMRequest, LLMResponse, LLMToolCall
 from .factory import ProviderFactory
-from .registry import ProviderRegistry
 
 # Import built-in providers so they self-register.
 from .hugging_face import HuggingFaceProvider
+from .registry import ProviderRegistry
 
 try:
     from .mistral import MistralProvider

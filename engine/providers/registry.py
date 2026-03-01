@@ -1,21 +1,19 @@
 from __future__ import annotations
 
-from typing import Dict, List, Type
-
 from .base import BaseLLMProvider
 
 
 class ProviderRegistry:
-    _registry: Dict[str, Type[BaseLLMProvider]] = {}
+    _registry: dict[str, type[BaseLLMProvider]] = {}
 
     @classmethod
-    def register(cls, name: str, provider_cls: Type[BaseLLMProvider]) -> None:
+    def register(cls, name: str, provider_cls: type[BaseLLMProvider]) -> None:
         if name in cls._registry:
             raise ValueError(f"Provider '{name}' is already registered")
         cls._registry[name] = provider_cls
 
     @classmethod
-    def get(cls, name: str) -> Type[BaseLLMProvider]:
+    def get(cls, name: str) -> type[BaseLLMProvider]:
         provider_cls = cls._registry.get(name)
         if not provider_cls:
             raise ValueError(
@@ -24,5 +22,5 @@ class ProviderRegistry:
         return provider_cls
 
     @classmethod
-    def list_providers(cls) -> List[str]:
+    def list_providers(cls) -> list[str]:
         return list(cls._registry.keys())

@@ -4,8 +4,9 @@ Production-ready settings management.
 """
 
 from functools import lru_cache
+
+from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
-from pydantic import Field, ConfigDict
 
 
 class Settings(BaseSettings):

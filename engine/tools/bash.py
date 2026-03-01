@@ -5,7 +5,6 @@ import os
 import shutil
 import subprocess
 import sys
-from typing import Tuple
 
 from .base import BaseTool, ToolExecutionResult
 
@@ -32,7 +31,7 @@ class BashTool(BaseTool):
                 return f'& "{sys.executable}" -m {trimmed}'
         return command
 
-    def _resolve_shell(self, command: str) -> Tuple[str, str]:
+    def _resolve_shell(self, command: str) -> tuple[str, str]:
         """Return (shell_path, mode), where mode is powershell/cmd/posix."""
         if os.name == "nt":
             # `&&` and `||` are cmd separators and may fail under legacy PowerShell parsing.
@@ -60,7 +59,14 @@ class BashTool(BaseTool):
         if mode == "cmd":
             return [shell_path, "/d", "/s", "/c", command], shell_path
         if mode == "powershell":
-            return [shell_path, "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", command], shell_path
+            return [
+                shell_path,
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                command,
+            ], shell_path
         return [shell_path, "-lc", command], shell_path
 
     async def execute(self, arguments: dict) -> ToolExecutionResult:

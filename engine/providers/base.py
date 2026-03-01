@@ -2,38 +2,38 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
 class LLMMessage:
     role: str
     content: str
-    name: Optional[str] = None
-    tool_call_id: Optional[str] = None
-    tool_calls: Optional[List[Dict[str, Any]]] = None
+    name: str | None = None
+    tool_call_id: str | None = None
+    tool_calls: list[dict[str, Any]] | None = None
 
 
 @dataclass
 class LLMToolCall:
     id: str
     name: str
-    arguments: Dict[str, Any]
+    arguments: dict[str, Any]
 
 
 @dataclass
 class LLMResponse:
-    content: Optional[str]
-    tool_calls: List[LLMToolCall]
+    content: str | None
+    tool_calls: list[LLMToolCall]
     raw: Any
 
 
 @dataclass
 class LLMRequest:
-    messages: List[LLMMessage]
-    tools: Optional[List[Dict[str, Any]]] = None
+    messages: list[LLMMessage]
+    tools: list[dict[str, Any]] | None = None
     temperature: float = 0.2
-    max_tokens: Optional[int] = 4096
+    max_tokens: int | None = 4096
 
 
 class BaseLLMProvider(ABC):

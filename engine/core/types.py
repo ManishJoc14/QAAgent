@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from engine.tools.base import ToolExecutionResult
 
@@ -15,7 +15,7 @@ class QATask:
         "Explore the main user flow and report functional, UX, accessibility, "
         "performance, and security issues."
     )
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 @dataclass
@@ -25,16 +25,16 @@ class QAIssue:
     title: str
     severity: str
     description: str
-    category: Optional[str] = None
-    steps_to_reproduce: Optional[List[str]] = None
+    category: str | None = None
+    steps_to_reproduce: list[str] | None = None
 
 
 @dataclass
 class QAResult:
     """Structured result returned by the engine."""
 
-    issues: List[Dict[str, Any]] = field(default_factory=list)
-    raw_model_output: Optional[str] = None
-    tool_outputs: List[ToolExecutionResult] = field(default_factory=list)
-    screenshots: List[str] = field(default_factory=list)
-    trace: List[Dict[str, Any]] = field(default_factory=list)
+    issues: list[dict[str, Any]] = field(default_factory=list)
+    raw_model_output: str | None = None
+    tool_outputs: list[ToolExecutionResult] = field(default_factory=list)
+    screenshots: list[str] = field(default_factory=list)
+    trace: list[dict[str, Any]] = field(default_factory=list)

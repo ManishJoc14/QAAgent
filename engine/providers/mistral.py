@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from mistralai import Mistral
 
@@ -31,7 +31,7 @@ class MistralProvider(BaseLLMProvider):
     async def generate(self, request: LLMRequest) -> LLMResponse:
         messages = self._convert_messages(request.messages)
 
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         for attempt in range(1, self.max_retries + 1):
             try:
                 response = await asyncio.wait_for(
@@ -54,10 +54,10 @@ class MistralProvider(BaseLLMProvider):
             f"Mistral provider failed after {self.max_retries} attempts: {last_error}"
         ) from last_error
 
-    def _convert_messages(self, messages: List[LLMMessage]) -> List[Dict[str, Any]]:
-        payload: List[Dict[str, Any]] = []
+    def _convert_messages(self, messages: list[LLMMessage]) -> list[dict[str, Any]]:
+        payload: list[dict[str, Any]] = []
         for msg in messages:
-            entry: Dict[str, Any] = {
+            entry: dict[str, Any] = {
                 "role": msg.role,
                 "content": msg.content,
             }
@@ -74,10 +74,10 @@ class MistralProvider(BaseLLMProvider):
         choice = response.choices[0]
         message = choice.message
 
-        tool_calls: List[LLMToolCall] = []
+        tool_calls: list[LLMToolCall] = []
         for tool_call in getattr(message, "tool_calls", []) or []:
             raw_args = tool_call.function.arguments
-            args: Dict[str, Any]
+            args: dict[str, Any]
             if isinstance(raw_args, str):
                 try:
                     args = json.loads(raw_args)

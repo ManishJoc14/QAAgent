@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Optional
+from typing import Any
+
 from huggingface_hub import InferenceClient
 
 from .base import BaseLLMProvider, LLMRequest, LLMResponse
@@ -34,12 +35,10 @@ class HuggingFaceProvider(BaseLLMProvider):
         )
 
     async def generate(self, request: LLMRequest) -> LLMResponse:
-        messages = [
-            {"role": msg.role, "content": msg.content} for msg in request.messages
-        ]
+        messages = [{"role": msg.role, "content": msg.content} for msg in request.messages]
         prompt = self._messages_to_prompt(request.messages)
 
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         for attempt in range(1, self.max_retries + 1):
             try:
                 loop = asyncio.get_running_loop()
@@ -137,7 +136,7 @@ class HuggingFaceProvider(BaseLLMProvider):
         return "\n\n".join(rendered)
 
     def _text_generation_with_provider_fallback(
-        self, *, prompt: str, temperature: float, max_tokens: Optional[int]
+        self, *, prompt: str, temperature: float, max_tokens: int | None
     ) -> Any:
         try:
             return self.client.text_generation(

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 @dataclass
@@ -10,10 +10,10 @@ class ToolExecutionResult:
     """Standardized output format for all tools."""
 
     success: bool = True
-    output: Optional[str] = None
-    error: Optional[str] = None
-    screenshot_base64: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    output: str | None = None
+    error: str | None = None
+    screenshot_base64: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class BaseTool(ABC):
@@ -21,14 +21,14 @@ class BaseTool(ABC):
 
     name: str
     description: str
-    input_schema: Dict[str, Any]
+    input_schema: dict[str, Any]
     timeout_seconds: int = 30
 
     @abstractmethod
-    async def execute(self, arguments: Dict[str, Any]) -> ToolExecutionResult:
+    async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
         raise NotImplementedError
 
-    def to_schema(self) -> Dict[str, Any]:
+    def to_schema(self) -> dict[str, Any]:
         return {
             "type": "function",
             "function": {

@@ -1,13 +1,13 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-# Project Imports
-from server.config import SCREENSHOT_DIR, get_settings
 from server.api import router as api_router
 
+# Project Imports
+from server.config import SCREENSHOT_DIR, get_settings
 
 settings = get_settings()
 
@@ -18,9 +18,7 @@ app = FastAPI(
     docs_url="/docs" if settings.app_env != "production" else None,
     redoc_url="/redoc" if settings.app_env != "production" else None,
 )
-app.mount(
-    "/screenshots", StaticFiles(directory=str(SCREENSHOT_DIR)), name="screenshots"
-)
+app.mount("/screenshots", StaticFiles(directory=str(SCREENSHOT_DIR)), name="screenshots")
 
 app.add_middleware(
     CORSMiddleware,

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import json
-from typing import Any, Dict, Literal, Optional, get_args
+from typing import Any, Literal, get_args
 
 from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
 
@@ -30,7 +29,7 @@ Action = Literal[
 
 ScrollDirection = Literal["up", "down", "left", "right"]
 
-DEVICE_PROFILES: Dict[str, Dict[str, Any]] = {
+DEVICE_PROFILES: dict[str, dict[str, Any]] = {
     "iphone_se": {
         "viewport": {"width": 375, "height": 667},
         "user_agent": (
@@ -93,7 +92,7 @@ DEVICE_PROFILES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-NETWORK_PROFILES: Dict[str, Dict[str, Any]] = {
+NETWORK_PROFILES: dict[str, dict[str, Any]] = {
     "wifi": {},
     "4g": {
         "offline": False,
@@ -127,7 +126,7 @@ NETWORK_PROFILES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-KEY_ALIAS: Dict[str, str] = {
+KEY_ALIAS: dict[str, str] = {
     "return": "Enter",
     "enter": "Enter",
     "esc": "Escape",
@@ -198,7 +197,7 @@ class PlaywrightComputerTool(BaseTool):
 
     def __init__(
         self,
-        target_url: Optional[str] = None,
+        target_url: str | None = None,
         device_profile: str = "iphone_14",
         network_profile: str = "wifi",
         locale: str = "en-US",
@@ -220,10 +219,10 @@ class PlaywrightComputerTool(BaseTool):
 
         self._console_events: list[str] = []
         self._request_failures: list[str] = []
-        self._startup_error: Optional[str] = None
+        self._startup_error: str | None = None
 
     @property
-    def current_url(self) -> Optional[str]:
+    def current_url(self) -> str | None:
         if self._page:
             return self._page.url
         return self._target_url
@@ -362,7 +361,9 @@ class PlaywrightComputerTool(BaseTool):
         self._context = await self._browser.new_context(**context_opts)
         self._page = await self._context.new_page()
 
-        self._page.on("console", lambda msg: self._console_events.append(f"[{msg.type}] {msg.text}"))
+        self._page.on(
+            "console", lambda msg: self._console_events.append(f"[{msg.type}] {msg.text}")
+        )
         self._page.on("pageerror", lambda exc: self._console_events.append(f"[pageerror] {exc}"))
         self._page.on(
             "requestfailed",
@@ -475,12 +476,12 @@ class PlaywrightComputerTool(BaseTool):
         self,
         *,
         action: Action,
-        text: Optional[str],
+        text: str | None,
         coordinate: Any,
         start_coordinate: Any,
-        scroll_direction: Optional[str],
-        scroll_amount: Optional[int],
-        duration: Optional[float],
+        scroll_direction: str | None,
+        scroll_amount: int | None,
+        duration: float | None,
     ) -> ToolExecutionResult:
         assert self._page is not None
 

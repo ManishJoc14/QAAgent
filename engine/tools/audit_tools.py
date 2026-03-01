@@ -4,7 +4,7 @@ import json
 import ssl
 import urllib.error
 import urllib.request
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .base import BaseTool, ToolExecutionResult
 from .playwright import PlaywrightComputerTool
@@ -25,7 +25,7 @@ class PageAuditTool(BaseTool):
     def __init__(self, computer_tool: PlaywrightComputerTool):
         self._computer = computer_tool
 
-    async def execute(self, arguments: Dict[str, Any]) -> ToolExecutionResult:
+    async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
         include_screenshot = bool(arguments.get("include_screenshot", False))
 
         await self._computer.ensure_ready()
@@ -79,7 +79,7 @@ class ConsoleNetworkAuditTool(BaseTool):
     def __init__(self, computer_tool: PlaywrightComputerTool):
         self._computer = computer_tool
 
-    async def execute(self, arguments: Dict[str, Any]) -> ToolExecutionResult:
+    async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
         limit = int(arguments.get("limit", 50))
         limit = max(1, min(limit, 200))
 
@@ -122,10 +122,10 @@ class SecurityHeadersAuditTool(BaseTool):
         "permissions-policy",
     ]
 
-    def __init__(self, fallback_url: Optional[str] = None):
+    def __init__(self, fallback_url: str | None = None):
         self._fallback_url = fallback_url
 
-    async def execute(self, arguments: Dict[str, Any]) -> ToolExecutionResult:
+    async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
         url = arguments.get("url") or self._fallback_url
         if not url:
             return ToolExecutionResult(success=False, error="No URL provided")
@@ -141,7 +141,9 @@ class SecurityHeadersAuditTool(BaseTool):
         )
 
         try:
-            with urllib.request.urlopen(req, timeout=15, context=ssl.create_default_context()) as response:
+            with urllib.request.urlopen(
+                req, timeout=15, context=ssl.create_default_context()
+            ) as response:
                 raw_headers = {k.lower(): v for k, v in response.headers.items()}
                 set_cookie = response.headers.get_all("Set-Cookie") or []
                 status = response.status
@@ -179,7 +181,11 @@ class SecurityHeadersAuditTool(BaseTool):
                     "missing_headers": missing_headers,
                     "weak_cookies": weak_cookies,
                     "findings": findings,
-                    "headers": {k: raw_headers[k] for k in sorted(raw_headers) if k in self._expected_headers},
+                    "headers": {
+                        k: raw_headers[k]
+                        for k in sorted(raw_headers)
+                        if k in self._expected_headers
+                    },
                 }
             ),
             metadata={"url": final_url, "status": status},
@@ -199,7 +205,7 @@ class PerformanceAuditTool(BaseTool):
     def __init__(self, computer_tool: PlaywrightComputerTool):
         self._computer = computer_tool
 
-    async def execute(self, arguments: Dict[str, Any]) -> ToolExecutionResult:
+    async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
         await self._computer.ensure_ready()
         metrics = await self._computer.collect_perf_metrics()
 
@@ -207,7 +213,7 @@ class PerformanceAuditTool(BaseTool):
         lcp = metrics.get("lcp_ms")
         cls = metrics.get("cls")
         fcp = metrics.get("fcp_ms")
-        if isinstance(lcp, (int, float)) and lcp > 2500:
+        if isinstance(lcp, int | float) and lcp > 2500:
             findings.append("LCP above 2.5s threshold.")
         if isinstance(fcp, (int, float)) and fcp > 1800:
             findings.append("FCP above 1.8s threshold.")

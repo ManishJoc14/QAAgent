@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from typing import List
 
 from engine.providers.base import BaseLLMProvider, LLMMessage, LLMRequest
 from engine.tools.base import ToolExecutionResult
@@ -30,7 +29,7 @@ class QAOrchestrator:
 
     async def execute(self, system_prompt: str, user_prompt: str) -> QAResult:
         result = QAResult()
-        messages: List[LLMMessage] = [
+        messages: list[LLMMessage] = [
             LLMMessage(role="system", content=system_prompt),
             LLMMessage(role="user", content=user_prompt),
         ]
@@ -128,9 +127,7 @@ class QAOrchestrator:
                 return True
         return False
 
-    def _build_tooling_blocker_issue(
-        self, tool_outputs: List[ToolExecutionResult]
-    ) -> dict:
+    def _build_tooling_blocker_issue(self, tool_outputs: list[ToolExecutionResult]) -> dict:
         errors = []
         for output in tool_outputs:
             if output.error:

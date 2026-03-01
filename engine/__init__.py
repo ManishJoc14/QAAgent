@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Iterable, Optional
+
+from collections.abc import Iterable
 
 # Project Imports
 from engine.core.agent_loop import QAOrchestrator
@@ -28,8 +29,8 @@ class Engine:
         *,
         provider_name: str = "mistral",
         model: str = "mistral-large-latest",
-        provider_kwargs: Optional[dict] = None,
-        tools: Optional[Iterable[BaseTool]] = None,
+        provider_kwargs: dict | None = None,
+        tools: Iterable[BaseTool] | None = None,
         max_iterations: int = 20,
         temperature: float = 0.2,
         max_tokens: int = 4096,
@@ -113,9 +114,7 @@ class Engine:
         )
 
         try:
-            return await orchestrator.execute(
-                system_prompt=system_prompt, user_prompt=user_prompt
-            )
+            return await orchestrator.execute(system_prompt=system_prompt, user_prompt=user_prompt)
         finally:
             await tools.close()
 

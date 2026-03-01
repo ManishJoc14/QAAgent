@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCREENSHOT_DIR = PROJECT_ROOT / "artifacts" / "screenshots"
@@ -27,16 +27,12 @@ class Settings(BaseSettings):
     @property
     def cors_allowed_origins(self) -> list[str]:
         return [
-            origin.strip()
-            for origin in self.cors_allowed_origins_raw.split(",")
-            if origin.strip()
+            origin.strip() for origin in self.cors_allowed_origins_raw.split(",") if origin.strip()
         ]
 
     @property
     def trusted_hosts(self) -> list[str]:
-        return [
-            host.strip() for host in self.trusted_hosts_raw.split(",") if host.strip()
-        ]
+        return [host.strip() for host in self.trusted_hosts_raw.split(",") if host.strip()]
 
     def validate_security_settings(self) -> None:
         if self.app_env.lower() != "production":
@@ -45,19 +41,13 @@ class Settings(BaseSettings):
         if self.api_auth_secret == "local-dev-agent-auth-secret-change-me":
             raise ValueError("API_AUTH_SECRET must be overridden in production.")
         if len(self.api_auth_secret) < 32:
-            raise ValueError(
-                "API_AUTH_SECRET must be at least 32 characters in production."
-            )
+            raise ValueError("API_AUTH_SECRET must be at least 32 characters in production.")
         if not self.cors_allowed_origins:
-            raise ValueError(
-                "CORS_ALLOWED_ORIGINS_RAW must define explicit origins in production."
-            )
+            raise ValueError("CORS_ALLOWED_ORIGINS_RAW must define explicit origins in production.")
         if "*" in self.cors_allowed_origins:
             raise ValueError("Wildcard CORS origin is not allowed in production.")
         if not self.trusted_hosts:
-            raise ValueError(
-                "TRUSTED_HOSTS_RAW must define explicit hosts in production."
-            )
+            raise ValueError("TRUSTED_HOSTS_RAW must define explicit hosts in production.")
         if "*" in self.trusted_hosts:
             raise ValueError("Wildcard trusted host is not allowed in production.")
 

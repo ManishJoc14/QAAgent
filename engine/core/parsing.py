@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 
-def extract_first_json_block(text: str | None) -> Dict[str, Any] | None:
+def extract_first_json_block(text: str | None) -> dict[str, Any] | None:
     if not text:
         return None
 
@@ -27,7 +27,7 @@ def extract_first_json_block(text: str | None) -> Dict[str, Any] | None:
         return None
 
 
-def extract_issues(text: str | None) -> List[Dict[str, Any]]:
+def extract_issues(text: str | None) -> list[dict[str, Any]]:
     payload = extract_first_json_block(text)
     if not payload:
         return []
