@@ -14,3 +14,9 @@ indent-style = "space"
 python_version = "3.11"
 strict = true
 ignore_missing_imports = true
+
+exclude = [
+    "web/",
+    "node_modules/",
+    "dist/"
+]
