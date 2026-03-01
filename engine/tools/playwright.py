@@ -249,6 +249,146 @@ class PlaywrightComputerTool(BaseTool):
         await self._ensure_browser()
         return self._response_events[-limit:]
 
+    async def collect_accessibility_signals(self) -> dict[str, Any]:
+        await self._ensure_browser()
+        assert self._page is not None
+        return await self._page.evaluate(
+            """
+            () => {
+                const labelsFor = new Set(
+                  Array.from(document.querySelectorAll('label[for]'))
+                    .map(el => (el.getAttribute('for') || '').trim())
+                    .filter(Boolean)
+                );
+                const imgs = Array.from(document.querySelectorAll('img'));
+                const missingAltImages = imgs
+                  .map((img, idx) => ({
+                    image_index: idx + 1,
+                    id: img.getAttribute('id') || '',
+                    src: img.getAttribute('src') || '',
+                    alt: img.getAttribute('alt'),
+                  }))
+                  .filter(item => !item.alt || !String(item.alt).trim())
+                  .map(item => ({ image_index: item.image_index, id: item.id, src: item.src }));
+
+                const controls = Array.from(document.querySelectorAll('input,textarea,select'))
+                  .filter(el => (el.getAttribute('type') || '').toLowerCase() !== 'hidden');
+                const unlabeledControls = controls
+                  .map((el, idx) => {
+                    const id = el.getAttribute('id') || '';
+                    const ariaLabel = el.getAttribute('aria-label') || '';
+                    const ariaLabelledBy = el.getAttribute('aria-labelledby') || '';
+                    const hasLabel = Boolean(id && labelsFor.has(id));
+                    const hasAria = Boolean(ariaLabel.trim() || ariaLabelledBy.trim());
+                    return {
+                      control_index: idx + 1,
+                      tag: el.tagName.toLowerCase(),
+                      type: (el.getAttribute('type') || 'text').toLowerCase(),
+                      id,
+                      name: el.getAttribute('name') || '',
+                      labeled: hasLabel || hasAria,
+                    };
+                  })
+                  .filter(item => !item.labeled)
+                  .map(({ labeled, ...rest }) => rest);
+
+                const validRoles = new Set([
+                  'button','link','checkbox','radio','textbox','combobox','listbox','menuitem',
+                  'tab','tabpanel','dialog','navigation','main','banner','contentinfo','search',
+                  'status','alert','progressbar','slider','switch'
+                ]);
+                const invalidRoles = Array.from(document.querySelectorAll('[role]'))
+                  .map(el => ({
+                    tag: el.tagName.toLowerCase(),
+                    role: (el.getAttribute('role') || '').toLowerCase().trim(),
+                    id: el.getAttribute('id') || '',
+                  }))
+                  .filter(item => item.role && !validRoles.has(item.role));
+
+                return {
+                  missing_alt_images: missingAltImages,
+                  unlabeled_controls: unlabeledControls,
+                  invalid_roles: invalidRoles,
+                };
+            }
+            """
+        )
+
+    async def collect_responsive_layout_signals(self, overflow_threshold: int = 768) -> dict[str, Any]:
+        await self._ensure_browser()
+        assert self._page is not None
+        return await self._page.evaluate(
+            """
+            (threshold) => {
+                const viewportMeta = document.querySelector('meta[name="viewport"]');
+                const viewportContent = (viewportMeta?.getAttribute('content') || '').toLowerCase();
+                const viewportMetaFound = viewportContent.includes('width=device-width');
+                const viewportWidth = window.innerWidth || 0;
+
+                const all = Array.from(document.querySelectorAll('body *'));
+                const overflowRisk = all
+                  .map((el, idx) => {
+                    const r = el.getBoundingClientRect();
+                    const style = window.getComputedStyle(el);
+                    const cssWidth = parseInt(style.width || '0', 10) || 0;
+                    const width = Math.max(Math.round(r.width), cssWidth);
+                    return {
+                      element_index: idx + 1,
+                      tag: el.tagName.toLowerCase(),
+                      id: el.id || '',
+                      fixed_width_px: width,
+                      exceeds_viewport: width > viewportWidth && viewportWidth > 0,
+                    };
+                  })
+                  .filter(item => item.fixed_width_px >= threshold || item.exceeds_viewport)
+                  .slice(0, 120);
+
+                return {
+                  viewport_meta_found: viewportMetaFound,
+                  overflow_risk_elements: overflowRisk,
+                };
+            }
+            """,
+            overflow_threshold,
+        )
+
+    async def collect_touch_target_details(self, min_size: int = 44) -> dict[str, Any]:
+        await self._ensure_browser()
+        assert self._page is not None
+        return await self._page.evaluate(
+            """
+            (minSize) => {
+                const clickable = Array.from(document.querySelectorAll('a,button,input,textarea,select,[role="button"]'))
+                  .filter(el => {
+                    if (el.tagName.toLowerCase() === 'input') {
+                      const t = (el.getAttribute('type') || 'text').toLowerCase();
+                      return ['button','submit','reset'].includes(t);
+                    }
+                    return true;
+                  });
+
+                const small = clickable
+                  .map((el, idx) => {
+                    const r = el.getBoundingClientRect();
+                    return {
+                      target_index: idx + 1,
+                      tag: el.tagName.toLowerCase(),
+                      id: el.getAttribute('id') || '',
+                      width_px: Math.round(r.width),
+                      height_px: Math.round(r.height),
+                    };
+                  })
+                  .filter(item => item.width_px > 0 && item.height_px > 0 && (item.width_px < minSize || item.height_px < minSize));
+
+                return {
+                  clickable_count: clickable.length,
+                  small_targets: small,
+                };
+            }
+            """,
+            min_size,
+        )
+
     async def navigate(self, url: str) -> None:
         await self._ensure_browser()
         assert self._page is not None

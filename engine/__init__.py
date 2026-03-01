@@ -6,13 +6,16 @@ from engine.core.types import QAResult, QATask
 from engine.prompts import build_system_prompt, build_user_prompt
 from engine.providers import ProviderFactory
 from engine.tools import (
+    AccessibilityAuditTool,
     ButtonClickCheckerTool,
     DeadLinkCheckerTool,
     FormValidatorTool,
     LoginFlowCheckerTool,
     NetworkTabAnalyzerTool,
     PlaywrightComputerTool,
+    ResponsiveLayoutCheckerTool,
     SessionPersistenceCheckerTool,
+    TouchTargetCheckerTool,
     ToolCollection,
 )
 
@@ -61,9 +64,17 @@ class Engine:
 
     def _build_default_tools(self, target_url: str) -> ToolCollection:
         if PlaywrightComputerTool is None:
-            raise RuntimeError("Playwright is not installed. Install it to use browser-backed tools.")
-        if SSLAuditTool is None or SecurityHeadersAuditTool is None or SecurityContentAuditTool is None:
-            raise RuntimeError("Security toolchain is unavailable because dependencies failed to load.")
+            raise RuntimeError(
+                "Playwright is not installed. Install it to use browser-backed tools."
+            )
+        if (
+            SSLAuditTool is None
+            or SecurityHeadersAuditTool is None
+            or SecurityContentAuditTool is None
+        ):
+            raise RuntimeError(
+                "Security toolchain is unavailable because dependencies failed to load."
+            )
 
         computer_tool = PlaywrightComputerTool(
             target_url=target_url,
@@ -77,9 +88,16 @@ class Engine:
                 DeadLinkCheckerTool(fallback_url=target_url),
                 FormValidatorTool(fallback_url=target_url),
                 ButtonClickCheckerTool(fallback_url=target_url),
-                LoginFlowCheckerTool(computer_tool=computer_tool, fallback_url=target_url),
-                SessionPersistenceCheckerTool(computer_tool=computer_tool, fallback_url=target_url),
+                LoginFlowCheckerTool(
+                    computer_tool=computer_tool, fallback_url=target_url
+                ),
+                SessionPersistenceCheckerTool(
+                    computer_tool=computer_tool, fallback_url=target_url
+                ),
                 NetworkTabAnalyzerTool(computer_tool=computer_tool),
+                AccessibilityAuditTool(fallback_url=target_url),
+                ResponsiveLayoutCheckerTool(fallback_url=target_url),
+                TouchTargetCheckerTool(fallback_url=target_url),
                 SSLAuditTool(fallback_url=target_url),
                 SecurityHeadersAuditTool(fallback_url=target_url),
                 SecurityContentAuditTool(computer_tool=computer_tool),
@@ -114,7 +132,9 @@ class Engine:
         )
 
         try:
-            return await orchestrator.execute(system_prompt=system_prompt, user_prompt=user_prompt)
+            return await orchestrator.execute(
+                system_prompt=system_prompt, user_prompt=user_prompt
+            )
         finally:
             await tools.close()
 

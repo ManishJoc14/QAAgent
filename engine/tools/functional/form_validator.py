@@ -49,7 +49,8 @@ class _FormParser(HTMLParser):
         if tag_name == "form":
             self._id_counter += 1
             self._current_form = {
-                "id": attr.get("id", "") or f"form-{self._id_counter}",
+                "id": attr.get("id", "").strip(),
+                "form_index": self._id_counter,
                 "action": attr.get("action", "").strip(),
                 "method": (attr.get("method", "get") or "get").lower(),
                 "controls": [],
@@ -120,6 +121,12 @@ class FormValidatorTool(BaseTool):
     def __init__(self, fallback_url: str | None = None):
         self._fallback_url = fallback_url
 
+    def _form_locator(self, form: dict[str, Any]) -> str:
+        form_id = str(form.get("id", "")).strip()
+        if form_id:
+            return f"form:{form_id}"
+        return f"form_index:{form.get('form_index')}"
+
     async def execute(self, arguments: dict[str, Any]) -> ToolExecutionResult:
         url = str(arguments.get("url") or self._fallback_url or "").strip()
         if not url:
@@ -167,7 +174,7 @@ class FormValidatorTool(BaseTool):
                 if not has_label:
                     form_unlabeled += 1
                     unlabeled_controls += 1
-                    control_location = f"{url}#form:{form['id']}"
+                    control_location = f"{url}#{self._form_locator(form)}"
                     control_hint = (
                         control["id"]
                         or control["name"]
@@ -192,6 +199,7 @@ class FormValidatorTool(BaseTool):
                             ),
                             "evidence": {
                                 "form_id": form["id"],
+                                "form_index": form["form_index"],
                                 "control": {
                                     "id": control["id"],
                                     "name": control["name"],
@@ -208,12 +216,11 @@ class FormValidatorTool(BaseTool):
                     {
                         "code": "form_missing_submit_control",
                         "severity": "high",
-                        "location": f"{url}#form:{form['id']}",
+                        "location": f"{url}#{self._form_locator(form)}",
                         "message": "Form has no submit button/input.",
                         "evidence": {
                             "form_id": form["id"],
-                            "method": form["method"],
-                            "action": urljoin(url, form["action"]) if form["action"] else "",
+                            "form_index": form["form_index"],
                         },
                     }
                 )
@@ -221,8 +228,7 @@ class FormValidatorTool(BaseTool):
             form_results.append(
                 {
                     "id": form["id"],
-                    "action": urljoin(url, form["action"]) if form["action"] else "",
-                    "method": form["method"],
+                    "form_index": form["form_index"],
                     "control_count": len(controls),
                     "required_field_count": form_required,
                     "unlabeled_control_count": form_unlabeled,

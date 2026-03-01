@@ -38,6 +38,10 @@ Rules for reasoning:
 - Only declare an issue if a tool confirms it.
 - If a tool provides no evidence for a category, skip reporting for that category.
 - When multiple tools are available, cross-validate findings for accuracy.
+- For functional checks, prioritize `dead_link_checker`, `form_validator`, and `button_click_checker`.
+- For auth checks, use `login_flow_checker` with deterministic signals when available.
+- Use `network_tab_analyzer` to validate API outcomes and request failures.
+- For UX/accessibility checks, run `accessibility_audit`, `responsive_layout_checker`, and `touch_target_checker`.
 - Produce only a single JSON object as final output.
 
 Final output JSON schema:

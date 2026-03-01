@@ -9,6 +9,7 @@ from .functional import (
     SessionPersistenceCheckerTool,
 )
 from .console import NetworkTabAnalyzerTool
+from .uiux import AccessibilityAuditTool, ResponsiveLayoutCheckerTool, TouchTargetCheckerTool
 
 try:
     from .audit_tools import (
@@ -35,6 +36,9 @@ __all__ = [
     "LoginFlowCheckerTool",
     "SessionPersistenceCheckerTool",
     "NetworkTabAnalyzerTool",
+    "AccessibilityAuditTool",
+    "ResponsiveLayoutCheckerTool",
+    "TouchTargetCheckerTool",
     "PlaywrightComputerTool",
     "BashTool",
     "PageAuditTool",

@@ -32,6 +32,7 @@ class LoginFlowCheckerTool(BaseTool):
             "success_selector": {"type": "string"},
             "auth_state_js": {"type": "string"},
             "token_storage_key": {"type": "string"},
+            "include_screenshot": {"type": "boolean"},
         },
         "required": [],
     }
@@ -51,6 +52,7 @@ class LoginFlowCheckerTool(BaseTool):
 
         username = str(arguments.get("username") or "").strip()
         password = str(arguments.get("password") or "").strip()
+        include_screenshot = bool(arguments.get("include_screenshot", False))
         verification = {
             "auth_api_endpoint_contains": str(arguments.get("auth_api_endpoint_contains") or "").strip(),
             "success_selector": str(arguments.get("success_selector") or "").strip(),
@@ -113,7 +115,7 @@ class LoginFlowCheckerTool(BaseTool):
                 }
             )
             payload["findings"] = [_format_finding_line(item) for item in finding_details]
-            return ToolExecutionResult(
+            result = ToolExecutionResult(
                 success=True,
                 output=json.dumps(payload),
                 metadata={
@@ -122,6 +124,10 @@ class LoginFlowCheckerTool(BaseTool):
                     "login_surface_detected": has_login_surface,
                 },
             )
+            if include_screenshot:
+                shot = await self._computer.execute({"action": "screenshot"})
+                result.screenshot_base64 = shot.screenshot_base64
+            return result
 
         try:
             try:
@@ -200,7 +206,7 @@ class LoginFlowCheckerTool(BaseTool):
             )
         payload["findings"] = [_format_finding_line(item) for item in finding_details]
 
-        return ToolExecutionResult(
+        result = ToolExecutionResult(
             success=True,
             output=json.dumps(payload),
             metadata={
@@ -209,3 +215,7 @@ class LoginFlowCheckerTool(BaseTool):
                 "likely_success": bool(login_result.get("likely_success")),
             },
         )
+        if include_screenshot:
+            shot = await self._computer.execute({"action": "screenshot"})
+            result.screenshot_base64 = shot.screenshot_base64
+        return result

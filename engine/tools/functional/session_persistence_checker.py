@@ -33,6 +33,7 @@ class SessionPersistenceCheckerTool(BaseTool):
         "type": "object",
         "properties": {
             "url": {"type": "string"},
+            "include_screenshot": {"type": "boolean"},
         },
         "required": [],
     }
@@ -45,6 +46,7 @@ class SessionPersistenceCheckerTool(BaseTool):
         await self._computer.ensure_ready()
 
         target_url = str(arguments.get("url") or self._computer.current_url or self._fallback_url or "").strip()
+        include_screenshot = bool(arguments.get("include_screenshot", False))
         if not target_url:
             return ToolExecutionResult(success=False, error="No URL available for session persistence check")
         if not target_url.startswith(("http://", "https://")):
@@ -132,7 +134,7 @@ class SessionPersistenceCheckerTool(BaseTool):
             "findings": findings,
         }
 
-        return ToolExecutionResult(
+        result = ToolExecutionResult(
             success=True,
             output=json.dumps(payload),
             metadata={
@@ -142,3 +144,7 @@ class SessionPersistenceCheckerTool(BaseTool):
                 "dropped_session_cookie_count": len(dropped),
             },
         )
+        if include_screenshot:
+            shot = await self._computer.execute({"action": "screenshot"})
+            result.screenshot_base64 = shot.screenshot_base64
+        return result
