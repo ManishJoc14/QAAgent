@@ -10,7 +10,7 @@ class ToolExecutionResult:
     """Standardized output format for all tools."""
 
     success: bool = True
-    output: str | None = None
+    output: str | dict | None = None
     error: str | None = None
     screenshot_base64: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -41,3 +41,7 @@ class BaseTool(ABC):
     async def close(self) -> None:
         """Optional cleanup hook for stateful tools."""
         return None
+
+    @classmethod
+    def fail(cls, error: str, metadata: dict[str, Any] | None = None) -> ToolExecutionResult:
+        return cls(success=False, error=error, metadata=metadata or {})
