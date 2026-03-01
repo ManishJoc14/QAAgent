@@ -22,12 +22,37 @@ function severityRank(severity: ScanIssue["severity"]) {
   return 3;
 }
 
+function compareIssueId(a: string, b: string) {
+  const getNum = (value: string) => {
+    const match = value.match(/(\d+)/);
+    return match ? Number.parseInt(match[1], 10) : Number.NaN;
+  };
+  const aNum = getNum(a);
+  const bNum = getNum(b);
+  if (!Number.isNaN(aNum) && !Number.isNaN(bNum) && aNum !== bNum) return aNum - bNum;
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function normalize(value: string) {
+  return value.toLowerCase().trim();
+}
+
 export function IssueTable({ issues }: { issues: ScanIssue[] }) {
   const [query, setQuery] = useState("");
   const [severity, setSeverity] = useState("All");
   const [category, setCategory] = useState("All");
-  const [sortBy, setSortBy] = useState<"id" | "severity" | "title">("severity");
+  const [sortBy, setSortBy] = useState<"id" | "severity" | "category" | "title">("severity");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  const onSort = (column: "id" | "severity" | "category" | "title") => {
+    if (sortBy === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+    setSortBy(column);
+    setSortDirection("asc");
+  };
 
   const categories = useMemo(() => {
     const values = Array.from(new Set(issues.map((item) => item.category)));
@@ -35,36 +60,70 @@ export function IssueTable({ issues }: { issues: ScanIssue[] }) {
   }, [issues]);
 
   const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
-    return [...issues]
+    const terms = normalize(query).split(/\s+/).filter(Boolean);
+    const sorted = [...issues]
       .filter((item) => (severity === "All" ? true : item.severity === severity))
       .filter((item) => (category === "All" ? true : item.category === category))
       .filter((item) => {
-        if (!q) return true;
-        const haystack = [item.id, item.title, item.category, item.description, item.severityJustification].join(" ").toLowerCase();
-        return haystack.includes(q);
+        if (terms.length === 0) return true;
+        const haystack = normalize([
+          item.id,
+          item.severity,
+          item.title,
+          item.category,
+          item.description,
+          item.severityJustification,
+          ...item.stepsToReproduce
+        ].join(" "));
+        return terms.every((term) => haystack.includes(term));
       })
       .sort((a, b) => {
-        if (sortBy === "severity") return severityRank(a.severity) - severityRank(b.severity);
-        return a[sortBy].localeCompare(b[sortBy]);
+        let cmp = 0;
+        if (sortBy === "severity") {
+          cmp = severityRank(a.severity) - severityRank(b.severity);
+          if (cmp === 0) cmp = compareIssueId(a.id, b.id);
+        } else if (sortBy === "id") {
+          cmp = compareIssueId(a.id, b.id);
+        } else if (sortBy === "category") {
+          cmp = a.category.localeCompare(b.category, undefined, { sensitivity: "base" });
+          if (cmp === 0) cmp = compareIssueId(a.id, b.id);
+        } else {
+          cmp = a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+          if (cmp === 0) cmp = compareIssueId(a.id, b.id);
+        }
+        return sortDirection === "asc" ? cmp : -cmp;
       });
-  }, [issues, severity, category, query, sortBy]);
+    return sorted;
+  }, [issues, severity, category, query, sortBy, sortDirection]);
 
   return (
-    <Card className="p-4">
+    <Card className="border border-[var(--surface-border)] bg-[var(--surface-card)] p-4 shadow-none backdrop-blur-0">
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-500" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search issues" className="pl-9" />
+          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[var(--surface-muted)]" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search issues"
+            className="border-[var(--surface-border)] bg-white pl-9 text-slate-900 placeholder:text-slate-500"
+          />
         </div>
-        <Select className="w-36" value={severity} onChange={(e) => setSeverity(e.target.value)}>
+        <Select
+          className="w-36 border-[var(--surface-border)] bg-white text-slate-900"
+          value={severity}
+          onChange={(e) => setSeverity(e.target.value)}
+        >
           <option>All</option>
           <option>P1</option>
           <option>P2</option>
           <option>P3</option>
           <option>Unknown</option>
         </Select>
-        <Select className="w-52" value={category} onChange={(e) => setCategory(e.target.value)}>
+        <Select
+          className="w-52 border-[var(--surface-border)] bg-white text-slate-900"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           <option>All</option>
           {categories.map((item) => (
             <option key={item}>{item}</option>
@@ -72,32 +131,36 @@ export function IssueTable({ issues }: { issues: ScanIssue[] }) {
         </Select>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border border-[var(--surface-border)] bg-white">
         <Table>
-          <THead>
+          <THead className="bg-slate-50 text-slate-600">
             <tr>
-              <TH>
-                <button className="inline-flex items-center gap-1" type="button" onClick={() => setSortBy("id")}>
+              <TH className="text-slate-700">
+                <button className="inline-flex items-center gap-1 font-semibold text-slate-700" type="button" onClick={() => onSort("id")}>
                   ID <ArrowUpDown className="h-3 w-3" />
                 </button>
               </TH>
-              <TH>
-                <button className="inline-flex items-center gap-1" type="button" onClick={() => setSortBy("severity")}>
+              <TH className="text-slate-700">
+                <button className="inline-flex items-center gap-1 font-semibold text-slate-700" type="button" onClick={() => onSort("severity")}>
                   Severity <ArrowUpDown className="h-3 w-3" />
                 </button>
               </TH>
-              <TH>Category</TH>
-              <TH>
-                <button className="inline-flex items-center gap-1" type="button" onClick={() => setSortBy("title")}>
+              <TH className="text-slate-700">
+                <button className="inline-flex items-center gap-1 font-semibold text-slate-700" type="button" onClick={() => onSort("category")}>
+                  Category <ArrowUpDown className="h-3 w-3" />
+                </button>
+              </TH>
+              <TH className="text-slate-700">
+                <button className="inline-flex items-center gap-1 font-semibold text-slate-700" type="button" onClick={() => onSort("title")}>
                   Title <ArrowUpDown className="h-3 w-3" />
                 </button>
               </TH>
             </tr>
           </THead>
-          <TBody>
+          <TBody className="divide-y divide-slate-200">
             {filtered.length === 0 && (
               <tr>
-                <TD colSpan={4} className="py-10 text-center text-slate-500">
+                <TD colSpan={4} className="py-10 text-center text-slate-600">
                   No matching issues for current filters.
                 </TD>
               </tr>
@@ -105,32 +168,32 @@ export function IssueTable({ issues }: { issues: ScanIssue[] }) {
 
             {filtered.map((item) => (
               <Fragment key={item.id}>
-                <tr className="cursor-pointer hover:bg-white/[0.03]" onClick={() => setExpanded(expanded === item.id ? null : item.id)}>
-                  <TD>{item.id}</TD>
-                  <TD>
+                <tr className="cursor-pointer transition hover:bg-slate-50" onClick={() => setExpanded(expanded === item.id ? null : item.id)}>
+                  <TD className="font-mono text-xs text-slate-700">{item.id}</TD>
+                  <TD className="text-slate-800">
                     <Badge tone={severityTone(item.severity)}>{item.severity}</Badge>
                   </TD>
-                  <TD>{item.category}</TD>
-                  <TD>{item.title}</TD>
+                  <TD className="capitalize text-slate-700">{item.category}</TD>
+                  <TD className="font-medium text-slate-900">{item.title}</TD>
                 </tr>
 
                 {expanded === item.id && (
                   <tr>
-                    <TD colSpan={4} className="bg-black/25">
+                    <TD colSpan={4} className="bg-slate-50">
                       <div className="space-y-3 text-sm">
                         <div>
                           <p className="text-[11px] uppercase tracking-wide text-slate-500">Description</p>
-                          <p className="mt-1 text-slate-300">{item.description || "Not provided"}</p>
+                          <p className="mt-1 text-slate-700">{item.description || "Not provided"}</p>
                         </div>
                         <div>
                           <p className="text-[11px] uppercase tracking-wide text-slate-500">Severity Justification</p>
-                          <p className="mt-1 text-slate-300">{item.severityJustification || "Not provided"}</p>
+                          <p className="mt-1 text-slate-700">{item.severityJustification || "Not provided"}</p>
                         </div>
                         <div>
                           <p className="text-[11px] uppercase tracking-wide text-slate-500">Steps To Reproduce</p>
-                          {item.stepsToReproduce.length === 0 && <p className="mt-1 text-slate-400">Not provided</p>}
+                          {item.stepsToReproduce.length === 0 && <p className="mt-1 text-slate-600">Not provided</p>}
                           {item.stepsToReproduce.length > 0 && (
-                            <ol className="mt-1 list-decimal space-y-1 pl-5 text-slate-300">
+                            <ol className="mt-1 list-decimal space-y-1 pl-5 text-slate-700">
                               {item.stepsToReproduce.map((step, index) => (
                                 <li key={`${item.id}-${index}`}>{step}</li>
                               ))}

@@ -16,7 +16,7 @@ export function HomePage() {
           QA<span className="text-[var(--surface-fg)]"> agent</span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-[var(--surface-fg)] md:flex">
-          <Link href="/#about" className="transition hover:opacity-70">
+          <Link href="/about" className="transition hover:opacity-70">
             About
           </Link>
           <Link
@@ -37,7 +37,7 @@ export function HomePage() {
 
         <p
           id="about"
-          className="mt-8 max-w-3xl text-balance text-xl leading-tight text-[var(--surface-fg)]/90 sm:text-[36px]"
+          className="mt-8 max-w-3xl text-balance text-xl leading-tight text-[var(--surface-fg)]/90 sm:text-[30px]"
         >
           Autonomous QA scans across devices, networks, and key user flows.
           <br />

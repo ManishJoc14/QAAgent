@@ -86,6 +86,18 @@ export interface TraceStep {
   status: "success" | "failed";
   assistantContent: string;
   toolCalls: BackendTraceToolCall[];
+  toolResults: TraceToolResult[];
+  output: string | null;
+  outputJson: Record<string, unknown> | null;
+  error: string | null;
+  metadata: Record<string, unknown>;
+  screenshotUrl?: string;
+}
+
+export interface TraceToolResult {
+  toolCallId: string;
+  toolName: string;
+  success: boolean;
   output: string | null;
   outputJson: Record<string, unknown> | null;
   error: string | null;

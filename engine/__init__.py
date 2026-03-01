@@ -79,6 +79,7 @@ class Engine:
         self.selected_tools = selected_tools
 
     async def _init_tools(
+        self,
         computer_tool: PlaywrightComputerTool,
         target_url: str,
         selected_tools: list[str],
@@ -125,7 +126,7 @@ class Engine:
             network_profile=self.network_profile,
         )
 
-        tools = self._init_tools(
+        tools = await self._init_tools(
             computer_tool,
             target_url,
             selected_tools=self.selected_tools,
@@ -135,7 +136,7 @@ class Engine:
 
     async def run_task(self, task: QATask) -> QAResult:
         # Build tools
-        tools = self._build_default_tools(task.target_url)
+        tools = await self._build_default_tools(task.target_url)
 
         # System Prompt
         system_prompt = build_system_prompt(
