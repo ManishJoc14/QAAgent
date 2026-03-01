@@ -1,18 +1,26 @@
-from __future__ import annotations
-
 import asyncio
 
+# Projects
 from engine import Engine, QATask
 from server.schemas import QARequest
 from server.utils import save_screenshot_base64
+from server.config import get_settings
+
+settings = get_settings()
 
 
 def run_qa_task_sync(task: QATask, request: QARequest):
+    api_key = settings.provider_api_key
+    if not api_key:
+        raise ValueError(
+            "Provider API key not set. Set PROVIDER_API_KEY in your environment."
+        )
+
     async def _runner():
         qa_engine = Engine(
-            provider_name="mistral",
-            model="mistral-large-latest",
-            provider_kwargs=None,
+            provider_name=settings.provider_name,
+            model=settings.provider_model,
+            provider_kwargs={"api_key": api_key},
             locale="en-US",
             device_profile=request.device_profile,
             network_profile=request.network_profile,

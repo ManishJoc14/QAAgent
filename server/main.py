@@ -1,12 +1,10 @@
-from __future__ import annotations
-
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-
+# Project Imports
 from server.config import SCREENSHOT_DIR, get_settings
 from server.api import router as api_router
 

@@ -1,10 +1,10 @@
 import asyncio
-
 from fastapi import APIRouter, HTTPException, Request
 
-from engine.core.types import QATask
+# Project Imports
+from engine import QATask
 from server.constants import DEFAULT_TASK
-from server.qa_service import run_qa_task_sync, serialize_tool_outputs_with_urls
+from server.services import run_qa_task_sync, serialize_tool_outputs_with_urls
 from server.schemas import QARequest, QAResponse
 from server.utils import normalize_url
 
@@ -14,11 +14,7 @@ router = APIRouter(prefix="/qa")
 @router.post("", response_model=QAResponse)
 async def qa_endpoint(request: QARequest, _http_request: Request):
     target_url = normalize_url(request.url)
-    task = QATask(
-        target_url=target_url,
-        task=DEFAULT_TASK,
-        context=request.context,
-    )
+    task = QATask(target_url=target_url, task=DEFAULT_TASK, context=request.context)
 
     try:
         result = await asyncio.to_thread(run_qa_task_sync, task, request)

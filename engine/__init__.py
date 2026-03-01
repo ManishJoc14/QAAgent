@@ -1,15 +1,11 @@
 from __future__ import annotations
-
-import asyncio
-import os
 from typing import Iterable, Optional
 
+# Project Imports
 from engine.core.agent_loop import QAOrchestrator
 from engine.core.types import QAResult, QATask
 from engine.prompts import build_system_prompt, build_user_prompt
 from engine.providers import ProviderFactory
-from engine.core.config import get_settings
-
 from engine.tools import (
     BaseTool,
     BashTool,
@@ -42,17 +38,6 @@ class Engine:
         network_profile: str = "wifi",
     ):
         provider_kwargs = provider_kwargs or {}
-        settings = get_settings()
-
-        if provider_name == "mistral":
-            provider_kwargs["api_key"] = settings.MISTRAL_API_KEY
-        if provider_name == "huggingface":
-            api_key = settings.HUGGINGFACE_API_KEY
-            if not api_key:
-                raise ValueError(
-                    "Hugging Face API key not set. Set HUGGINGFACE_API_KEY in your environment."
-                )
-            provider_kwargs["api_key"] = api_key
 
         self.provider = ProviderFactory.create(
             name=provider_name,
@@ -134,43 +119,5 @@ class Engine:
         finally:
             await tools.close()
 
-    async def run_url(self, target_url: str, task: Optional[str] = None) -> QAResult:
-        qa_task = QATask(target_url=target_url, task=task or DEFAULT_QA_TASK)
-        return await self.run_task(qa_task)
 
-
-async def run_qa_engine(
-    target_url: str,
-    provider_name: str = "mistral",
-    model: str = "mistral-large-latest",
-    provider_kwargs: Optional[dict] = None,
-    max_iterations: int = 20,
-    locale: str = "en-US",
-    persona: Optional[str] = None,
-    device_profile: str = "iphone_14",
-    network_profile: str = "wifi",
-) -> QAResult:
-    engine = Engine(
-        provider_name=provider_name,
-        model=model,
-        provider_kwargs=provider_kwargs,
-        max_iterations=max_iterations,
-        locale=locale,
-        persona=persona,
-        device_profile=device_profile,
-        network_profile=network_profile,
-    )
-    return await engine.run_url(target_url)
-
-
-def run_qa_engine_sync(*args, **kwargs) -> QAResult:
-    return asyncio.run(run_qa_engine(*args, **kwargs))
-
-
-__all__ = [
-    "Engine",
-    "QATask",
-    "QAResult",
-    "run_qa_engine",
-    "run_qa_engine_sync",
-]
+__all__ = ["Engine", "QATask", "QAResult"]

@@ -10,15 +10,15 @@ SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
 class Settings(BaseSettings):
     app_env: str = "local"
-    api_port: int = 8000
 
     cors_allowed_origins_raw: str = "http://127.0.0.1:5173,http://localhost:5173"
     trusted_hosts_raw: str = "127.0.0.1,localhost"
     force_https: bool = False
     api_auth_secret: str = "local-dev-auth-secret-change-me"
 
-    mistral_api_key: str
-    huggingface_api_key: str
+    provider_name: str = "mistral"
+    provider_model: str = "mistral-large-latest"
+    provider_api_key: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=False
