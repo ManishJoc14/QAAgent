@@ -193,7 +193,7 @@ export function IssueTable({ issues }: { issues: ScanIssue[] }) {
                           <p className="text-[11px] uppercase tracking-wide text-slate-500">Steps To Reproduce</p>
                           {item.stepsToReproduce.length === 0 && <p className="mt-1 text-slate-600">Not provided</p>}
                           {item.stepsToReproduce.length > 0 && (
-                            <ol className="mt-1 list-decimal space-y-1 pl-5 text-slate-700">
+                            <ol className="mt-1 space-y-1 text-slate-700">
                               {item.stepsToReproduce.map((step, index) => (
                                 <li key={`${item.id}-${index}`}>{step}</li>
                               ))}
