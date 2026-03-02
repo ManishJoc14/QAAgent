@@ -97,19 +97,19 @@ export function IssueTable({ issues }: { issues: ScanIssue[] }) {
   }, [issues, severity, category, query, sortBy, sortDirection]);
 
   return (
-    <Card className="border border-[var(--surface-border)] bg-[var(--surface-card)] p-4 shadow-none backdrop-blur-0">
+    <Card className="border border-surface-border bg-surface-card p-4 shadow-none backdrop-blur-0">
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[var(--surface-muted)]" />
+          <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-surface-muted" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search issues"
-            className="border-[var(--surface-border)] bg-white pl-9 text-slate-900 placeholder:text-slate-500"
+            className="border-surface-border bg-transparent pl-9 text-slate-900 placeholder:text-slate-500 outline-none ring-0 transition focus:border-slate-900 focus:shadow-none dark:focus:border-slate-200"
           />
         </div>
         <Select
-          className="w-36 border-[var(--surface-border)] bg-white text-slate-900"
+          className="w-36 border-surface-border bg-transparent text-slate-900 outline-none ring-0 transition focus:border-slate-900 focus:shadow-none dark:focus:border-slate-200"
           value={severity}
           onChange={(e) => setSeverity(e.target.value)}
         >
@@ -120,7 +120,7 @@ export function IssueTable({ issues }: { issues: ScanIssue[] }) {
           <option>Unknown</option>
         </Select>
         <Select
-          className="w-52 border-[var(--surface-border)] bg-white text-slate-900"
+          className="w-52 border-surface-border bg-transparent text-slate-900 outline-none ring-0 transition focus:border-slate-900 focus:shadow-none dark:focus:border-slate-200"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
@@ -131,7 +131,7 @@ export function IssueTable({ issues }: { issues: ScanIssue[] }) {
         </Select>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--surface-border)] bg-white">
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-white">
         <Table>
           <THead className="bg-slate-50 text-slate-600">
             <tr>

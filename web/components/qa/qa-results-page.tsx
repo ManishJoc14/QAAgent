@@ -240,18 +240,20 @@ export function QAResultsPage() {
 
           <div className="mt-6 space-y-3">
             {report.trace.map((step) => (
-              <article key={step.id} className="rounded-xl border border-surface-border p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-semibold">Step {step.step}</p>
-                  <span
-                    className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${step.status === "failed"
-                      ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
-                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      }`}
-                  >
-                    {step.status}
-                  </span>
-                </div>
+              <details key={step.id} className="rounded-xl border border-surface-border p-4">
+                <summary className="cursor-pointer list-none">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-semibold">Step {step.step}</p>
+                    <span
+                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${step.status === "failed"
+                        ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
+                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                        }`}
+                    >
+                      {step.status}
+                    </span>
+                  </div>
+                </summary>
 
                 <div className="mt-3">
                   <p className="text-sm font-semibold uppercase tracking-wide text-slate-700">Tools</p>
@@ -352,7 +354,7 @@ export function QAResultsPage() {
                   <div className="mt-1 rounded-lg border border-surface-border bg-slate-50/40 dark:bg-slate-900/40 py-1">
                     <MarkdownRenderer
                       content={step.assistantContent || "No assistant commentary returned for this step."}
-                      className="max-w-none px-3"
+                      className="max-w-none px-8"
                     />
                   </div>
                 </div>
@@ -367,7 +369,7 @@ export function QAResultsPage() {
                     </pre>
                   </details>
                 )}
-              </article>
+              </details>
             ))}
           </div>
 
