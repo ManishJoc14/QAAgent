@@ -66,12 +66,20 @@ export function QAFormPage() {
   });
 
   const selectedCount = useMemo(() => selectedTools?.length ?? 0, [selectedTools]);
+  const allToolsSelected = selectedCount === tools.length;
 
   const toggleTool = (name: (typeof tools)[number]) => {
     setSelectedTools((prev) => {
       const current = prev ?? [];
       if (current.includes(name)) return current.filter((item) => item !== name);
       return [...current, name];
+    });
+  };
+
+  const toggleAllTools = () => {
+    setSelectedTools((prev) => {
+      const current = prev ?? [];
+      return current.length === tools.length ? [] : [...tools];
     });
   };
 
@@ -151,7 +159,16 @@ export function QAFormPage() {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <label className="text-sm font-medium">Tools</label>
-                <span className="text-xs text-surface-muted">{selectedCount} selected</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-surface-muted">{selectedCount} selected</span>
+                  <button
+                    type="button"
+                    onClick={toggleAllTools}
+                    className="rounded-lg border border-surface-border px-2 py-1 text-xs font-medium transition hover:border-slate-400 dark:hover:border-slate-500"
+                  >
+                    {allToolsSelected ? "Unselect all" : "Select all"}
+                  </button>
+                </div>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
                 {tools.map((tool) => {
