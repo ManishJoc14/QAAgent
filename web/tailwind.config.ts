@@ -11,6 +11,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        "surface-bg": "var(--surface-bg)",
+        "surface-fg": "var(--surface-fg)",
+        "surface-muted": "var(--surface-muted)",
+        "surface-card": "var(--surface-card)",
+        "surface-border": "var(--surface-border)",
+        "surface-accent": "var(--surface-accent)",
+        "surface-accent-fg": "var(--surface-accent-fg)",
         bg: "#0B0F14",
         panel: "#0F1722",
         line: "#1D2733",

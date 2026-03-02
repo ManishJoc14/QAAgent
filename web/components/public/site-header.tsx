@@ -7,7 +7,7 @@ const SiteHeader = () => {
                 QA agent
             </Link>
             <nav className="flex items-center gap-6 text-sm">
-                <Link href="/qa" className="font-medium text-[var(--surface-fg)]">
+                <Link href="/qa" className="font-medium text-surface-fg">
                     try now
                 </Link>
             </nav>

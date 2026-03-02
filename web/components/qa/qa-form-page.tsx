@@ -93,9 +93,9 @@ export function QAFormPage() {
   return (
     <>
       <main className="mx-auto w-full max-w-6xl px-6 pb-20 pt-6 md:pt-10">
-        <section className="mx-auto max-w-4xl rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-card)] p-6 shadow-sm sm:p-8">
+        <section className="mx-auto max-w-4xl rounded-2xl border border-surface-border bg-surface-card p-6 shadow-sm sm:p-8">
           <h1 className="text-3xl font-semibold tracking-tight">Autonomous Scan</h1>
-          <p className="mt-2 text-sm text-[var(--surface-muted)]">Run an end-to-end QA mission and generate a full report.</p>
+          <p className="mt-2 text-sm text-surface-muted">Run an end-to-end QA mission and generate a full report.</p>
 
           <div className="mt-8 space-y-6">
             <div>
@@ -106,7 +106,7 @@ export function QAFormPage() {
                 id="targetUrl"
                 value={targetUrl}
                 onChange={(event) => setTargetUrl(event.target.value)}
-                className="h-12 w-full rounded-xl border border-[var(--surface-border)] bg-transparent px-4 text-base outline-none ring-0 transition focus:border-slate-900 dark:focus:border-slate-200"
+                className="h-12 w-full rounded-xl border border-surface-border bg-transparent px-4 text-base outline-none ring-0 transition focus:border-slate-900 dark:focus:border-slate-200"
               />
             </div>
 
@@ -119,7 +119,7 @@ export function QAFormPage() {
                   id="deviceProfile"
                   value={deviceProfile}
                   onChange={(event) => setDeviceProfile(event.target.value as ScanPayload["deviceProfile"])}
-                  className="h-12 w-full rounded-xl border border-[var(--surface-border)] bg-transparent px-4 text-sm outline-none transition focus:border-slate-900 dark:focus:border-slate-200"
+                  className="h-12 w-full rounded-xl border border-surface-border bg-transparent px-4 text-sm outline-none transition focus:border-slate-900 dark:focus:border-slate-200"
                 >
                   {deviceOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -137,7 +137,7 @@ export function QAFormPage() {
                   id="networkProfile"
                   value={networkProfile}
                   onChange={(event) => setNetworkProfile(event.target.value as ScanPayload["networkProfile"])}
-                  className="h-12 w-full rounded-xl border border-[var(--surface-border)] bg-transparent px-4 text-sm outline-none transition focus:border-slate-900 dark:focus:border-slate-200"
+                  className="h-12 w-full rounded-xl border border-surface-border bg-transparent px-4 text-sm outline-none transition focus:border-slate-900 dark:focus:border-slate-200"
                 >
                   {networkOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -151,7 +151,7 @@ export function QAFormPage() {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <label className="text-sm font-medium">Tools</label>
-                <span className="text-xs text-[var(--surface-muted)]">{selectedCount} selected</span>
+                <span className="text-xs text-surface-muted">{selectedCount} selected</span>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
                 {tools.map((tool) => {
@@ -159,7 +159,7 @@ export function QAFormPage() {
                   return (
                     <label
                       key={tool}
-                      className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-[var(--surface-border)] px-3 py-2 text-sm capitalize transition hover:border-slate-400 dark:hover:border-slate-500"
+                      className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-surface-border px-3 py-2 text-sm capitalize transition hover:border-slate-400 dark:hover:border-slate-500"
                     >
                       <input type="checkbox" checked={checked} onChange={() => toggleTool(tool)} className="h-4 w-4" />
                       <span>{toolLabelMap[tool] ?? tool.replaceAll("_", " ")}</span>
@@ -177,7 +177,7 @@ export function QAFormPage() {
                 id="contextJson"
                 value={contextJson}
                 onChange={(event) => setContextJson(event.target.value)}
-                className="h-36 w-full rounded-xl border border-[var(--surface-border)] bg-transparent p-4 font-mono text-xs outline-none transition focus:border-slate-900 dark:focus:border-slate-200"
+                className="h-36 w-full rounded-xl border border-surface-border bg-transparent p-4 font-mono text-xs outline-none transition focus:border-slate-900 dark:focus:border-slate-200"
               />
             </div>
 
@@ -185,7 +185,7 @@ export function QAFormPage() {
               type="button"
               disabled={mutation.isPending}
               onClick={executeScan}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--surface-accent)] px-6 py-3 text-sm font-medium text-[var(--surface-accent-fg)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-65"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-surface-accent px-6 py-3 text-sm font-medium text-surface-accent-fg transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-65"
             >
               {mutation.isPending ? "Running autonomous scan..." : "Try now"}
               {!mutation.isPending && <ArrowRight className="h-4 w-4" />}

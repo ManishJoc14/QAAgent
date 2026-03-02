@@ -171,7 +171,7 @@ export function QAResultsPage() {
   if (!report) {
     return (
       <main className="mx-auto w-full max-w-6xl px-6 pb-20">
-        <section className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-card)] p-6">
+        <section className="rounded-2xl border border-surface-border bg-surface-card p-6">
           <p className="text-sm text-slate-700">Loading latest scan report...</p>
         </section>
       </main>
@@ -181,17 +181,17 @@ export function QAResultsPage() {
   return (
     <>
       <main className="mx-auto w-full max-w-6xl space-y-8 px-6 pb-20">
-        <section className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-card)] p-6 shadow-sm">
+        <section className="rounded-2xl border border-surface-border bg-surface-card p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-wide text-[var(--surface-muted)]">Overview</p>
+              <p className="text-xs uppercase tracking-wide text-surface-muted">Overview</p>
               <h1 className="mt-1 text-2xl font-semibold tracking-tight">{report.targetUrl}</h1>
-              <p className="mt-1 text-xs text-[var(--surface-muted)]">{report.id}</p>
+              <p className="mt-1 text-xs text-surface-muted">{report.id}</p>
             </div>
             <button
               type="button"
               onClick={downloadJson}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[var(--surface-border)] px-4 py-2 text-sm font-medium transition hover:bg-slate-50 dark:hover:bg-slate-900"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-surface-border px-4 py-2 text-sm font-medium transition hover:bg-slate-50 dark:hover:bg-slate-900"
             >
               <Download className="h-4 w-4" />
               Download JSON
@@ -199,40 +199,40 @@ export function QAResultsPage() {
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-[var(--surface-border)] p-4">
-              <p className="text-xs uppercase tracking-wide text-[var(--surface-muted)]">Risk Score</p>
+            <div className="rounded-xl border border-surface-border p-4">
+              <p className="text-xs uppercase tracking-wide text-surface-muted">Risk Score</p>
               <p className={`mt-2 text-3xl font-semibold ${tone(report.riskScore)}`}>{report.riskScore}</p>
             </div>
-            <div className="rounded-xl border border-[var(--surface-border)] p-4">
-              <p className="text-xs uppercase tracking-wide text-[var(--surface-muted)]">Performance Score</p>
+            <div className="rounded-xl border border-surface-border p-4">
+              <p className="text-xs uppercase tracking-wide text-surface-muted">Performance Score</p>
               <p className={`mt-2 text-3xl font-semibold ${tone(report.performanceScore)}`}>{report.performanceScore}</p>
             </div>
-            <div className="rounded-xl border border-[var(--surface-border)] p-4">
-              <p className="text-xs uppercase tracking-wide text-[var(--surface-muted)]">Total Findings</p>
+            <div className="rounded-xl border border-surface-border p-4">
+              <p className="text-xs uppercase tracking-wide text-surface-muted">Total Findings</p>
               <p className="mt-2 text-3xl font-semibold">{report.issues.length}</p>
             </div>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-card)] p-6 shadow-sm">
+        <section className="rounded-2xl border border-surface-border bg-surface-card p-6 shadow-sm">
           <h2 className="text-lg font-semibold">Issues</h2>
           <div className="mt-4">
             <IssueTable issues={report.issues} />
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-card)] p-6 shadow-sm">
+        <section className="rounded-2xl border border-surface-border bg-surface-card p-6 shadow-sm">
           <h2 className="text-lg font-semibold">Report</h2>
-          <p className="mt-1 text-sm text-[var(--surface-muted)]">Human-readable summary from the agent output.</p>
-          <div className="mt-4 rounded-xl border border-[var(--surface-border)] bg-slate-50/40 dark:bg-slate-900/40 py-2">
+          <p className="mt-1 text-sm text-surface-muted">Human-readable summary from the agent output.</p>
+          <div className="mt-4 rounded-xl border border-surface-border bg-slate-50/40 dark:bg-slate-900/40 py-2">
             <MarkdownRenderer content={readableReportContent} className="max-w-none px-4" />
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-card)] p-6 shadow-sm">
+        <section className="rounded-2xl border border-surface-border bg-surface-card p-6 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold">How The Scan Ran</h2>
-            <Link href="/qa" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--surface-muted)] hover:text-[var(--surface-fg)]">
+            <Link href="/qa" className="inline-flex items-center gap-1 text-sm font-medium text-surface-muted hover:text-surface-fg">
               Run another scan <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -240,7 +240,7 @@ export function QAResultsPage() {
 
           <div className="mt-6 space-y-3">
             {report.trace.map((step) => (
-              <article key={step.id} className="rounded-xl border border-[var(--surface-border)] p-4">
+              <article key={step.id} className="rounded-xl border border-surface-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-semibold">Step {step.step}</p>
                   <span
@@ -270,7 +270,7 @@ export function QAResultsPage() {
                         const args = compactArgs(call.arguments ?? {});
                         const summary = result ? buildToolSummary(call.name, result) : { lines: [], findings: [] as string[] };
                         return (
-                          <details key={call.id} className="rounded-xl border border-[var(--surface-border)] p-3">
+                          <details key={call.id} className="rounded-xl border border-surface-border p-3">
                             <summary className="cursor-pointer list-none">
                               <div className="flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ export function QAResultsPage() {
                                   {result.error && <div className="rounded-md border border-rose-200 bg-rose-50 px-2 py-1 text-sm text-rose-700">{result.error}</div>}
 
                                   {!result.outputJson && result.output && (
-                                    <details className="rounded-md border border-[var(--surface-border)] p-2">
+                                    <details className="rounded-md border border-surface-border p-2">
                                       <summary className="cursor-pointer text-sm font-medium text-slate-700">Raw Output</summary>
                                       <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-all text-sm text-slate-700">{result.output}</pre>
                                     </details>
@@ -333,7 +333,7 @@ export function QAResultsPage() {
                                         alt={`${call.name} screenshot`}
                                         width={1200}
                                         height={700}
-                                        className="mt-1 h-auto w-full rounded-md border border-[var(--surface-border)]"
+                                        className="mt-1 h-auto w-full rounded-md border border-surface-border"
                                       />
                                     </div>
                                   )}
@@ -349,7 +349,7 @@ export function QAResultsPage() {
 
                 <div className="mt-3">
                   <p className="text-sm font-semibold uppercase tracking-wide text-slate-700">Agent Notes</p>
-                  <div className="mt-1 rounded-lg border border-[var(--surface-border)] bg-slate-50/40 dark:bg-slate-900/40 py-1">
+                  <div className="mt-1 rounded-lg border border-surface-border bg-slate-50/40 dark:bg-slate-900/40 py-1">
                     <MarkdownRenderer
                       content={step.assistantContent || "No assistant commentary returned for this step."}
                       className="max-w-none px-3"
@@ -358,8 +358,8 @@ export function QAResultsPage() {
                 </div>
 
                 {step.toolCalls.length === 0 && getToolResults(step).length > 0 && (
-                  <details className="mt-3 rounded-lg border border-[var(--surface-border)] p-3">
-                    <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-[var(--surface-muted)]">
+                  <details className="mt-3 rounded-lg border border-surface-border p-3">
+                    <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-surface-muted">
                       Step Outputs
                     </summary>
                     <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-all text-xs text-slate-700 dark:text-slate-300">
@@ -371,9 +371,9 @@ export function QAResultsPage() {
             ))}
           </div>
 
-          <details className="mt-5 rounded-xl border border-[var(--surface-border)] p-4">
-            <summary className="cursor-pointer text-sm font-medium text-[var(--surface-muted)]">Show raw technical trace</summary>
-            <div className="mt-4 rounded-xl border border-[var(--surface-border)] p-3 font-mono text-xs break-all whitespace-pre-wrap">
+          <details className="mt-5 rounded-xl border border-surface-border p-4">
+            <summary className="cursor-pointer text-sm font-medium text-surface-muted">Show raw technical trace</summary>
+            <div className="mt-4 rounded-xl border border-surface-border p-3 font-mono text-xs break-all whitespace-pre-wrap">
               {JSON.stringify(report.trace, null, 2)}
             </div>
           </details>

@@ -4,8 +4,8 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="z-[10] border-t border-[var(--surface-border)] py-4">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 text-sm text-[var(--surface-muted)] md:flex-row md:items-center md:justify-between">
+    <footer className="z-[10] border-t border-surface-border py-4">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 text-sm text-surface-muted md:flex-row md:items-center md:justify-between">
         <p>&copy; {year} QA Agent.</p>
         {/* <div className="flex items-center gap-4">
           <Link className="transition hover:text-[var(--surface-fg)]" href="/qa">
