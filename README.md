@@ -117,9 +117,9 @@ Backend endpoints:
 
 ### 6.2 Frontend
 
-From `web/`:
-
+From repository root:
 ```bash
+cd web
 npm install
 npm run dev
 ```
@@ -174,3 +174,74 @@ Add a new provider:
 1. Implement `BaseLLMProvider`.
 2. Register in `ProviderRegistry`.
 3. Set `PROVIDER_NAME` and `PROVIDER_MODEL` in environment.
+
+## 10. Docker (Run Web + Backend Together)
+
+### 10.1 Prerequisites
+
+- Docker Desktop running
+- Docker Compose v2 (`docker compose`)
+
+### 10.2 Prepare `.env` (root)
+
+Create/update root `.env`:
+
+```env
+APP_ENV=local
+PROVIDER_NAME=mistral
+PROVIDER_MODEL=mistral-large-latest
+PROVIDER_API_KEY=your_real_provider_key
+API_AUTH_SECRET=local-dev-auth-secret-change-me
+NEXT_PUBLIC_QA_API_URL=http://localhost:8000/api/qa
+```
+
+Notes:
+- Frontend API key is auto-wired from `API_AUTH_SECRET` in `docker-compose.yml`.
+- `NEXT_PUBLIC_*` variables are build-time values for Next.js.
+
+### 10.3 Build and Start
+
+From repository root:
+
+```bash
+docker compose up --build
+```
+
+Services:
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:8000`
+- API docs: `http://localhost:8000/docs` (non-production)
+
+### 10.4 Stop
+
+```bash
+docker compose down
+```
+
+### 10.5 Logs
+
+```bash
+docker compose logs -f
+```
+
+### 10.6 Rebuild When Frontend Env Changes
+
+If you change any `NEXT_PUBLIC_*` values:
+
+```bash
+docker compose up --build
+```
+
+### 10.7 Troubleshooting Slow Build / "resolving provenance"
+
+If build appears stuck for several minutes on provenance metadata:
+
+```powershell
+$env:BUILDX_NO_DEFAULT_ATTESTATIONS="1"
+docker compose build --progress=plain
+docker compose up
+```
+
+Also note:
+- First backend image pull is large (Playwright base image), so first run can be slow.
+- If needed, pre-pull once: `docker pull mcr.microsoft.com/playwright/python:v1.58.0-jammy`.
