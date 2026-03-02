@@ -35,7 +35,7 @@ export function HomePage() {
 
           <p
             id="about"
-            className="mt-8 max-w-3xl text-balance text-xl leading-tight text-surface-fg/90 sm:text-[30px]"
+            className="mt-8 max-w-4xl text-balance text-xl leading-tight text-surface-fg/90 sm:text-[30px]"
           >
             Autonomous QA scans across devices, networks, and key user flows.
             <br />
@@ -46,7 +46,7 @@ export function HomePage() {
             href="/qa"
             className="mt-10 inline-flex min-h-11 items-center gap-2 rounded-xl bg-black px-7 py-3 text-lg font-medium text-white transition hover:-translate-y-0.5 dark:bg-white dark:text-black"
           >
-            Try now <ArrowRight className="h-5 w-5 -rotate-10" />
+            Try now <ArrowRight className="h-5 w-5" />
           </Link>
         </main>
       </div>
