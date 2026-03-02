@@ -17,12 +17,6 @@ function tone(score: number) {
   return "text-rose-600 dark:text-rose-400";
 }
 
-function summarizeStep(step: ScanReport["trace"][number]) {
-  if (step.toolCalls.length === 0) return "No tool used";
-  const names = step.toolCalls.map((call) => call.name).join(", ");
-  return names;
-}
-
 function getToolResults(step: ScanReport["trace"][number]): TraceToolResult[] {
   if (Array.isArray(step.toolResults)) return step.toolResults;
   const hasLegacyOutput = step.output || step.outputJson || step.error || Object.keys(step.metadata ?? {}).length > 0 || step.screenshotUrl;
@@ -239,26 +233,30 @@ export function QAResultsPage() {
           <p className="mt-1 text-base text-slate-700">Step-by-step execution with tool usage and outcomes.</p>
 
           <div className="mt-6 space-y-3">
-            {report.trace.map((step) => (
-              <details key={step.id} className="rounded-xl border border-surface-border p-4">
+            {report.trace.map((step) => {
+              const stepToolResults = getToolResults(step);
+              const successCount = step.toolCalls.reduce((count, _call, index) => (stepToolResults[index]?.success ? count + 1 : count), 0);
+              const failedCount = step.toolCalls.reduce((count, _call, index) => (stepToolResults[index] && !stepToolResults[index].success ? count + 1 : count), 0);
+
+              return (
+                <details key={step.id} className="rounded-xl border border-surface-border p-4">
                 <summary className="cursor-pointer list-none">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-semibold">Step {step.step}</p>
-                    <span
-                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${step.status === "failed"
-                        ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
-                        : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
-                        }`}
-                    >
-                      {step.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {successCount > 0 && (
+                        <span className="inline-flex rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                          Success: {successCount}
+                        </span>
+                      )}
+                      {failedCount > 0 && (
+                        <span className="inline-flex rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                          Failed: {failedCount}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </summary>
-
-                <div className="mt-3">
-                  <p className="text-sm font-semibold uppercase tracking-wide text-slate-700">Tools</p>
-                  <p className="mt-1 text-base text-slate-800">{summarizeStep(step)}</p>
-                </div>
 
                 <div className="mt-3">
                   <p className="text-sm font-semibold uppercase tracking-wide text-slate-700">Tool Calls</p>
@@ -268,7 +266,7 @@ export function QAResultsPage() {
                   {step.toolCalls.length > 0 && (
                     <div className="mt-2 space-y-3">
                       {step.toolCalls.map((call, callIdx) => {
-                        const result = getToolResults(step)[callIdx];
+                        const result = stepToolResults[callIdx];
                         const args = compactArgs(call.arguments ?? {});
                         const summary = result ? buildToolSummary(call.name, result) : { lines: [], findings: [] as string[] };
                         return (
@@ -349,28 +347,28 @@ export function QAResultsPage() {
                   )}
                 </div>
 
-                <div className="mt-3">
-                  <p className="text-sm font-semibold uppercase tracking-wide text-slate-700">Agent Notes</p>
-                  <div className="mt-1 rounded-lg border border-surface-border bg-slate-50/40 dark:bg-slate-900/40 py-1">
-                    <MarkdownRenderer
-                      content={step.assistantContent || "No assistant commentary returned for this step."}
-                      className="max-w-none px-8"
-                    />
+                {step.assistantContent?.trim() && (
+                  <div className="mt-3">
+                    <p className="text-sm font-semibold uppercase tracking-wide text-slate-700">Agent Notes</p>
+                    <div className="mt-1 rounded-lg border border-surface-border bg-slate-50/40 dark:bg-slate-900/40 py-1">
+                      <MarkdownRenderer content={step.assistantContent} className="max-w-none px-8" />
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {step.toolCalls.length === 0 && getToolResults(step).length > 0 && (
+                {step.toolCalls.length === 0 && stepToolResults.length > 0 && (
                   <details className="mt-3 rounded-lg border border-surface-border p-3">
                     <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-surface-muted">
                       Step Outputs
                     </summary>
                     <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-all text-xs text-slate-700 dark:text-slate-300">
-                      {JSON.stringify(getToolResults(step), null, 2)}
+                      {JSON.stringify(stepToolResults, null, 2)}
                     </pre>
                   </details>
                 )}
               </details>
-            ))}
+              );
+            })}
           </div>
 
           <details className="mt-5 rounded-xl border border-surface-border p-4">
